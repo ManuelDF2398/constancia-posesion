@@ -7,7 +7,6 @@
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -36,12 +35,11 @@
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 5px; border: 2px solid var(--bg); }
 
-        /* Efecto Spotlight (Ratón) */
         .spotlight-card {
-            position: relative; overflow: hidden;
             background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-radius: var(--r); border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative; overflow: hidden;
         }
         .spotlight-card::before {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -79,10 +77,7 @@
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .btn-bl { background: var(--bl); border-color: var(--bl); color: #fff; }
         .btn-bl:hover { background: var(--bl-hover); border-color: var(--bl-hover); }
-        .btn-gn { background: var(--gn); border-color: var(--gn); color: #fff; }
-        .btn-gn:hover { background: #34d399; border-color: #34d399; }
         .btn-rd { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
-        .btn-am { background: var(--am); border-color: var(--am); color: #fff; }
 
         /* Main structure */
         .main { max-width: 1300px; margin: 0 auto; padding: 3rem 1.5rem; }
@@ -104,9 +99,13 @@
         .pr { display: grid; grid-template-columns: 1fr 160px auto; gap: 1.5rem; align-items: end; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--rs); border: 1px dashed rgba(255,255,255,0.15); margin-bottom:1rem;}
         @media(max-width: 650px) { .pr { grid-template-columns: 1fr; } }
         
+        /* ===== TABLA DE LINDEROS (TEXTO 100% BLANCO) ===== */
         .lt { width: 100%; border-collapse: collapse; margin-top: 1rem;}
-        .lt th { text-align: left; padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--t2); }
-        .lt td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .lt th { text-align: left; padding: 12px 10px; border-bottom: 2px solid rgba(255,255,255,0.2); color: #ffffff; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; }
+        .lt td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ffffff; }
+        .lt td:first-child { color: #ffffff; font-weight: 700; font-size: 0.95rem; }
+        .lt input { color: #ffffff !important; font-weight: 500; }
+        .lt input::placeholder { color: rgba(255, 255, 255, 0.5) !important; } /* Guía semi-transparente blanca */
 
         .mbg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .mbg.show { display: flex; }
@@ -116,8 +115,6 @@
         .tst { pointer-events: auto; padding: 1.2rem 1.8rem; border-radius: var(--rs); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 1rem; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); color: #fff; backdrop-filter: blur(10px); transition: 0.4s ease; }
         .t-ok { border-color: var(--gn); color: #a7f3d0; }
         .t-er { border-color: var(--rd); color: #fca5a5; }
-
-        .pdfp { position: absolute; left: -9999px; top: 0; width: 794px; background: #fff; }
     </style>
 </head>
 <body>
@@ -134,7 +131,7 @@
 
 <header class="hdr" style="display:none" id="ah">
     <div class="hdr-in">
-        <div class="brand"><div class="mk">S</div><h1>Constancia de Posesión<small>Sistema Local</small></h1></div>
+        <div class="brand"><div class="mk">S</div><h1>Constancia de Posesión<small>Sistema de Generación Documental</small></h1></div>
         <div class="hr"><button class="btn btn-lo" onclick="doLogout()">Cerrar Sesión</button></div>
     </div>
 </header>
@@ -148,7 +145,7 @@
 
     <div class="tpl-bar spotlight-card" id="tplBar">
         <div style="flex: 1;">
-            <div style="font-size: 1.1rem; color: #fff; font-weight: bold; margin-bottom: 5px;" id="tplTx">Esperando Archivo...</div>
+            <div style="font-size: 1.1rem; color: #fff; font-weight: bold; margin-bottom: 5px;" id="tplTx">Esperando Archivo Maestro...</div>
             <div style="font-size: 0.9rem; color: var(--t3);">Por favor, haz clic en el botón azul para subir tu archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> desde tu computadora.</div>
         </div>
         <div>
@@ -162,17 +159,16 @@
     <div class="abar spotlight-card">
         <div class="ag">
             <button class="btn btn-bl" onclick="generar()" id="bG" disabled>▶ Generar Documento</button>
-            <button class="btn btn-am" onclick="expPDF()" id="bP" disabled>📑 Descargar PDF</button>
-            <button class="btn" onclick="expDOCX()" id="bD" disabled>📥 Descargar Word</button>
+            <button class="btn" onclick="expDOCX()" id="bD" disabled style="background: #2563eb; color: #fff; border-color: #3b82f6; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">📥 Descargar Documento (Word)</button>
         </div>
         <div class="ag"><button class="btn btn-rd" onclick="showM('ml')">🗑 Vaciar Todo</button></div>
     </div>
 
     <div class="grid">
         <div class="sec spotlight-card"><div class="sh">Expediente</div><div class="sb">
-            <div class="fr"><div class="lf"><label>N.° Expediente</label><input type="text" id="f_N_EXPEDIENTE"></div><div class="lf"><label>Año</label><input type="text" id="f_AÑO"></div></div>
-            <div class="lf"><label>Fecha Emisión</label><input type="text" id="f_FECHA_EMISION"></div>
-            <div class="lf"><label>Fecha Firma</label><input type="text" id="f_FECHA_DOC"></div>
+            <div class="fr"><div class="lf"><label>N.° Expediente</label><input type="text" id="f_N_EXPEDIENTE"></div><div class="lf"><label>Año</label><input type="text" id="f_AÑO" placeholder="2026"></div></div>
+            <div class="lf"><label>Fecha Emisión</label><input type="text" id="f_FECHA_EMISION" placeholder="Ej: 15 de enero de 2026"></div>
+            <div class="lf"><label>Fecha Firma</label><input type="text" id="f_FECHA_DOC" placeholder="Ej: 20 de enero de 2026"></div>
         </div></div>
 
         <div class="sec spotlight-card"><div class="sh">Solicitante(s)</div><div class="sb">
@@ -191,12 +187,13 @@
             <div class="lf"><label>Letras</label><input type="text" id="f_EXTENSION_LET" readonly style="background: rgba(16,185,129,0.1); border-color: var(--gn); color: var(--gn);"></div>
         </div></div>
 
-        <div class="sec spotlight-card"><div class="sh">Linderos</div><div class="sb">
+        <div class="sec spotlight-card"><div class="sh">Linderos y Medidas Perimétricas</div><div class="sb">
             <table class="lt">
-                <tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="Medida"></td><td><input type="text" id="f_N_COL" placeholder="Colindante"></td></tr>
-                <tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="Medida"></td><td><input type="text" id="f_S_COL" placeholder="Colindante"></td></tr>
-                <tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="Medida"></td><td><input type="text" id="f_E_COL" placeholder="Colindante"></td></tr>
-                <tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="Medida"></td><td><input type="text" id="f_O_COL" placeholder="Colindante"></td></tr>
+                <tr><th>Orientación</th><th>Medida (Metros)</th><th>Colindante</th></tr>
+                <tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="Medida"></td><td><input type="text" id="f_N_COL" placeholder="Colindante norte"></td></tr>
+                <tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="Medida"></td><td><input type="text" id="f_S_COL" placeholder="Colindante sur"></td></tr>
+                <tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="Medida"></td><td><input type="text" id="f_E_COL" placeholder="Colindante este"></td></tr>
+                <tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="Medida"></td><td><input type="text" id="f_O_COL" placeholder="Colindante oeste"></td></tr>
             </table>
         </div></div>
 
@@ -209,7 +206,7 @@
 <div class="tbox" id="tb"></div>
 
 <div class="mbg" id="ml"><div class="mdl spotlight-card">
-    <h3>🗑 Vaciar Formulario</h3><p>¿Borrar todo?</p>
+    <h3>🗑 Vaciar Formulario</h3><p>¿Estás seguro de querer borrar todos los datos ingresados?</p>
     <div class="mr"><button class="btn" onclick="hideM('ml')">Cancelar</button><button class="btn btn-rd" onclick="doLimp()">Sí, borrar</button></div>
 </div></div>
 
@@ -251,9 +248,10 @@
         const reader = new FileReader();
         reader.onload = function(evt) {
             try {
-                if (typeof PizZip === 'undefined') throw new Error("La herramienta PizZip no ha cargado. Revisa tu internet.");
+                if (typeof PizZip === 'undefined') throw new Error("La herramienta interna no cargó. Revisa tu internet.");
                 tZ = new PizZip(evt.target.result);
-                $('tplTx').innerHTML = `✅ Plantilla cargada: <b>${file.name}</b>`;
+                
+                $('tplTx').innerHTML = `✅ Plantilla maestra cargada: <b>${file.name}</b>`;
                 $('tplTx').style.color = '#34d399';
                 $('tplBar').style.borderColor = 'rgba(16, 185, 129, 0.4)';
                 $('bG').disabled = false;
@@ -261,7 +259,7 @@
                 toast('¡Plantilla procesada correctamente!', 'ok');
             } catch(err) {
                 console.error(err);
-                toast('Error: ' + err.message, 'er');
+                toast('Error: Formato de archivo no válido (.docx).', 'er');
             }
             e.target.value = '';
         };
@@ -318,19 +316,10 @@
     function eR(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     function eX(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     
-    function valid() {
-        const d = coll();
-        const ms = ['N_EXPEDIENTE', 'AÑO', 'FECHA_EMISION', 'NOMBRE', 'PARAJE', 'LT', 'EXTENSION_NUM'].filter(k => !d[k]?.trim());
-        const p = getP();
-        if (!p.ds.length || p.ds.some(x => !x)) ms.push('DNI');
-        if (ms.length) { toast('Completa los campos: ' + ms.join(', '), 'er'); return null; }
-        return d;
-    }
-
     function generar() {
         if (!tZ) return toast('Carga la plantilla primero', 'er');
-        const d = valid();
-        if(!d) return;
+        const d = coll();
+        if(!d.NOMBRE || !d.DNI) return toast('Completa los campos de Nombre y DNI', 'er');
         
         try {
             const z = new PizZip(tZ.generate({ type: 'arraybuffer' }));
@@ -345,8 +334,10 @@
                 z.file(p, txt);
             });
             gB = z.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-            $('bD').disabled = $('bP').disabled = false;
-            setSt(3); toast('Generado con éxito', 'ok');
+            
+            // Habilitar únicamente botón de Word
+            $('bD').disabled = false;
+            setSt(3); toast('Documento generado con éxito', 'ok');
         } catch (e) { toast('Error al generar: '+e.message, 'er'); }
     }
 
@@ -356,105 +347,7 @@
         if(!gB) return;
         const url = URL.createObjectURL(gB), a = document.createElement('a');
         a.href = url; a.download = `CONSTANCIA_${nom(coll())}.docx`; a.click();
-        setSt(4); toast('Word descargado', 'ok');
-    }
-
-    /* ====== NUEVA FUNCIÓN PDF MEJORADA ====== */
-    function expPDF() {
-        if (!tZ) return toast('Carga la plantilla primero.', 'er');
-        autoEL();
-        const d = valid();
-        if (!d) return;
-
-        toast('Renderizando PDF formal...', 'in');
-        
-        const p = getP();
-        const dniText = p.ds.length > 1 ? `identificados con DNI N.º ${d.DNI}` : `identificado con DNI N.º ${d.DNI}`;
-        const escapeHtml = h => eX(h);
-
-        const pdfHtml = `
-            <div style="font-family: 'Times New Roman', Times, serif; padding: 2.5cm 3cm; color: #000; line-height: 1.5; font-size: 12pt; background: #fff; text-align: justify;">
-                
-                <div style="text-align: right; margin-bottom: 30px; font-size: 11pt;">
-                    <p style="margin: 0;"><b>EXPEDIENTE N.º:</b> ${escapeHtml(d.N_EXPEDIENTE)}-${escapeHtml(d.AÑO)}</p>
-                    <p style="margin: 0;"><b>FECHA DE EMISIÓN:</b> ${escapeHtml(d.FECHA_EMISION)}</p>
-                </div>
-                
-                <h2 style="text-align: center; text-decoration: underline; font-size: 16pt; margin: 40px 0; font-weight: bold; letter-spacing: 1px;">
-                    CONSTANCIA DE POSESIÓN
-                </h2>
-                
-                <p style="text-indent: 1.5cm; margin-bottom: 20px;">
-                    La Gerencia de Desarrollo Territorial e Infraestructura de la Municipalidad Distrital de Sicaya, visto el expediente administrativo N.º ${escapeHtml(d.N_EXPEDIENTE)}, donde ${escapeHtml(d.SEXO)} <b>${escapeHtml(d.NOMBRE)}</b>, ${dniText}, solicita Certificado de Posesión de su predio ubicado en el paraje denominado "${escapeHtml(d.PARAJE)}", distrito de Sicaya, provincia de Huancayo, región Junín.
-                </p>
-                
-                <p style="text-indent: 1.5cm; margin-bottom: 20px;">
-                    Se deja expresa constancia que la parte solicitante viene ocupando de manera pacífica y continua el predio en mención, el cual cuenta con una extensión superficial útil de <b>${escapeHtml(d.EXTENSION_NUM)} m²</b> (${escapeHtml(d.EXTENSION_LET)}).
-                </p>
-                
-                <p style="margin-bottom: 10px;"><b>Características Perimétricas del Predio:</b></p>
-                
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11pt;">
-                    <thead>
-                        <tr>
-                            <th style="border: 1px solid #000; padding: 8px; text-align: left; width: 25%; background: #f9f9f9;">ORIENTACIÓN</th>
-                            <th style="border: 1px solid #000; padding: 8px; text-align: left; width: 25%; background: #f9f9f9;">MEDIDA</th>
-                            <th style="border: 1px solid #000; padding: 8px; text-align: left; background: #f9f9f9;">COLINDANTE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 8px;"><b>NORTE</b></td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.N_NUM)} ml</td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.N_COL)}</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 8px;"><b>SUR</b></td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.S_NUM)} ml</td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.S_COL)}</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 8px;"><b>ESTE</b></td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.E_NUM)} ml</td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.E_COL)}</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 8px;"><b>OESTE</b></td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.O_NUM)} ml</td>
-                            <td style="border: 1px solid #000; padding: 8px;">${escapeHtml(d.O_COL)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <p style="margin-bottom: 20px;"><b>Detalle de Adjudicación:</b> ${escapeHtml(d.DETALLE_CONS_ADJ)}</p>
-                
-                <p style="text-align: right; margin-top: 50px; margin-bottom: 80px;">
-                    Sicaya, ${escapeHtml(d.FECHA_DOC)}
-                </p>
-                
-                <div style="width: 300px; margin: 0 auto; text-align: center; border-top: 1px solid #000; padding-top: 8px;">
-                    <p style="margin: 0; font-weight: bold; font-size: 11pt;">Firma y Sello</p>
-                    <p style="margin: 0; font-size: 10pt; color: #333;">Autoridad Competente</p>
-                    <p style="margin: 0; font-size: 9pt; color: #555;">Municipalidad Distrital de Sicaya</p>
-                </div>
-            </div>
-        `;
-
-        const element = document.createElement('div');
-        element.innerHTML = pdfHtml;
-        
-        const opt = {
-            margin:       0, // Margen controlado por el padding interno (2.5cm)
-            filename:     `CONSTANCIA_POSESION_${nom(d)}.pdf`,
-            image:        { type: 'jpeg', quality: 1 },
-            html2canvas:  { scale: 2, letterRendering: true, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            setSt(4);
-            toast('PDF formal descargado.', 'ok');
-        });
+        setSt(4); toast('Word descargado correctamente', 'ok');
     }
     
     function showM(id) { $(id).classList.add('show'); }
