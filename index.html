@@ -6,7 +6,7 @@
     <title>Catastro Sicaya Premium — Constancia de Posesión</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.7/pizzip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -361,7 +361,7 @@
             <span id="tplTx" style="color:var(--t2); font-size: 1.05rem;">Buscando plantilla maestra en el servidor local...</span>
         </div>
         <div id="btnLocalDocx" style="display: none; flex-shrink: 0;">
-            <label class="btn btn-bl" style="margin:0; box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); border: 1px solid #93c5fd;">
+            <label class="btn btn-bl" style="margin:0; box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); border: 1px solid #93c5fd; cursor: pointer;">
                 <span style="font-size: 1.2rem;">📂</span> Subir Plantilla Manual (.docx)
                 <input type="file" accept=".docx" style="display:none" onchange="loadLocalTemplate(event)">
             </label>
@@ -627,7 +627,7 @@
     /* =========================================
        3. CARGA DE PLANTILLA LOCAL (.docx)
        ========================================= */
-    // ACTUALIZADO AL NUEVO NOMBRE DEL DOCUMENTO
+    // ACTUALIZADO AL NUEVO NOMBRE DEL DOCUMENTO LOCAL
     const TEMPLATE_NAME = './CONSTANCIA_POSESION_PLANTILLA.docx';
 
     async function cargarPlantilla() {
