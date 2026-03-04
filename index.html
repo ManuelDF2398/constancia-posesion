@@ -138,7 +138,7 @@
 <!-- Barra estado plantilla (se carga sola) -->
 <div class="tpl-bar" id="tplBar">
     <span class="spin" id="tplIc"></span>
-    <span id="tplTx" style="color:var(--t2)">Cargando plantilla desde el repositorio...</span>
+    <span id="tplTx" style="color:var(--t2)">Cargando plantilla desde Google Drive...</span>
 </div>
 
 <!-- Config Google Drive -->
@@ -238,26 +238,34 @@ window.addEventListener('DOMContentLoaded',()=>{if(sessionStorage.getItem('a')==
 /* ===== STATE ===== */
 let tZ=null,gB=null,gT=null;
 
-/* ===== CARGA AUTOMÁTICA DE PLANTILLA ===== */
+/* ===== CARGA AUTOMÁTICA DESDE GOOGLE DRIVE ===== */
+const GDRIVE_FILE_ID='1Xnzr7dwg5jjc1ROzu_6d9EJwHjeKwi6F';
+const GDRIVE_API_KEY='AIzaSyBPGjF_kCwiV9FdLzodQjQ79ppjx__RZIA';
+
 async function cargarPlantilla(){
     const bar=$('tplBar'),ic=$('tplIc'),tx=$('tplTx');
     setSt(1);
+    tx.textContent='Cargando plantilla desde Google Drive...';
+    const urlMedia='https://www.googleapis.com/drive/v3/files/'+GDRIVE_FILE_ID+'?alt=media&key='+GDRIVE_API_KEY;
+    const urlExport='https://www.googleapis.com/drive/v3/files/'+GDRIVE_FILE_ID+'/export?mimeType=application/vnd.openxmlformats-officedocument.wordprocessingml.document&key='+GDRIVE_API_KEY;
     try{
-        const r=await fetch('CONSTANCIA_POSESION_PLANTILLA.docx');
-        if(!r.ok) throw new Error('Archivo no encontrado (HTTP '+r.status+'). Asegúrese de subir CONSTANCIA_POSESION_PLANTILLA.docx al repositorio GitHub.');
+        let r=await fetch(urlMedia);
+        if(!r.ok){r=await fetch(urlExport)}
+        if(!r.ok) throw new Error('HTTP '+r.status+' - Verifique que el archivo esté compartido como Cualquier persona con el enlace');
         const buf=await r.arrayBuffer();
+        if(buf.byteLength<500) throw new Error('Archivo vacío o inválido');
         tZ=new PizZip(buf);
-        ic.className='';ic.textContent='✅';
-        tx.textContent='✓ Plantilla cargada: CONSTANCIA_POSESION_PLANTILLA.docx';tx.style.color='var(--gn)';
+        ic.className='';ic.textContent='\u2705';
+        tx.innerHTML='\u2713 Plantilla cargada desde <b>Google Drive</b>';tx.style.color='var(--gn)';
         bar.classList.add('ok');
         $('bG').disabled=false;
         setSt(2);
-        toast('Plantilla cargada automáticamente','ok');
+        toast('Plantilla cargada desde Google Drive','ok');
     }catch(e){
-        ic.className='';ic.textContent='❌';
+        ic.className='';ic.textContent='\u274c';
         tx.textContent='Error: '+e.message;tx.style.color='var(--rd)';
         bar.classList.add('fail');
-        toast('No se pudo cargar la plantilla','er');
+        toast('No se pudo cargar desde Drive: '+e.message,'er');
     }
 }
 
