@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catastro Sicaya — Constancia de Posesión</title>
+    <title>Catastro Sicaya Premium — Constancia de Posesión</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.min.js"></script>
@@ -110,20 +110,22 @@
         .pr { display: grid; grid-template-columns: 1fr 160px auto; gap: 1.5rem; align-items: end; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--rs); border: 1px dashed rgba(255,255,255,0.15); margin-bottom:1rem;}
         @media(max-width: 650px) { .pr { grid-template-columns: 1fr; } }
         
-        /* ===== TABLA DE LINDEROS (DISEÑO PREDIO CORREGIDO) ===== */
+        /* ===== TABLA DE LINDEROS (TEXTO 100% NEGRO EN FONDOS CLAROS) ===== */
         .lt { width: 100%; border-collapse: collapse; margin-top: 1rem; border-radius: 8px; overflow: hidden; }
         .lt th { text-align: left; padding: 14px; border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--tx); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; background: rgba(0,0,0,0.3); }
         .lt td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ffffff; background: rgba(255,255,255,0.01); }
         .lt td:first-child { color: var(--bl-hover); font-weight: 700; font-size: 0.95rem; background: rgba(0,0,0,0.2); }
         
-        /* Cuadritos oscuros con letra blanca (sigue diseño predio) */
+        /* Cuadritos con fondo blanco translúcido y letra NEGRA para fácil lectura */
         .lt input { 
-            width: 100%; padding: 0.8rem; background: var(--glass-inp); 
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; 
-            color: #ffffff !important; font-family: var(--f); font-size: 0.95rem; outline: none; transition: var(--trans);
+            width: 100%; padding: 0.8rem; 
+            background: rgba(255, 255, 255, 0.9); /* Fondo claro */
+            border: 1px solid rgba(255,255,255,0.8); border-radius: 6px; 
+            color: #000000 !important; /* LETRA EN NEGRO */
+            font-family: var(--f); font-size: 0.95rem; font-weight: 600; outline: none; transition: var(--trans);
         }
-        .lt input::placeholder { color: rgba(255, 255, 255, 0.4) !important; }
-        .lt input:focus { border-color: var(--bl); background: rgba(59, 130, 246, 0.05); box-shadow: 0 0 0 3px var(--bld); }
+        .lt input::placeholder { color: rgba(0, 0, 0, 0.5) !important; font-weight: 400; }
+        .lt input:focus { background: #ffffff; box-shadow: 0 0 0 3px var(--bld); border-color: var(--bl); }
 
         .mbg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .mbg.show { display: flex; }
@@ -185,7 +187,7 @@
 
     <div class="grid">
         <div class="sec spotlight-card"><div class="sh">Expediente</div><div class="sb">
-            <div class="fr"><div class="lf"><label>N.° Expediente</label><input type="text" id="f_N_EXPEDIENTE" placeholder="Ej: 001"></div><div class="lf"><label>Año</label><input type="text" id="f_AÑO" placeholder="2026"></div></div>
+            <div class="fr"><div class="lf"><label>N.° Expediente</label><input type="text" id="f_N_EXPEDIENTE" placeholder="Ej: 001"></div><div class="lf"><label>Año</label><input type="text" id="f_AÑO" placeholder="Ej: 2026"></div></div>
             <div class="lf"><label>Fecha Emisión</label><input type="text" id="f_FECHA_EMISION" placeholder="Ej: 15 de enero de 2026"></div>
             <div class="lf"><label>Fecha Firma</label><input type="text" id="f_FECHA_DOC" placeholder="Ej: 20 de enero de 2026"></div>
         </div></div>
@@ -193,33 +195,33 @@
         <div class="sec spotlight-card"><div class="sh">Solicitante(s)</div><div class="sb">
             <div class="lf"><label>Tipo</label><select id="f_tipo" onchange="onTipo()"><option value="el Sr.">Masculino</option><option value="la Sra.">Femenino</option><option value="los Sres.">Plural</option></select></div>
             <div class="pl" id="pl">
-                <div class="pr"><div class="lf"><label>Nombre Completo</label><input type="text" class="pn" placeholder="Nombres y Apellidos"></div><div class="lf"><label>DNI</label><input type="text" class="pd" maxlength="8" placeholder="8 dígitos"></div></div>
+                <div class="pr"><div class="lf"><label>Nombre Completo</label><input type="text" class="pn" placeholder="Ej: Juan Antonio Pérez Rojas"></div><div class="lf"><label>DNI</label><input type="text" class="pd" maxlength="8" placeholder="Ej: 12345678"></div></div>
             </div>
             <button class="btn bap" id="bAP" style="display:none; width: 100%; justify-content:center; margin-top:1rem;" onclick="addP()">+ Añadir Persona</button>
         </div></div>
 
         <div class="sec spotlight-card"><div class="sh">Predio</div><div class="sb">
-            <div class="lf"><label>Paraje</label><input type="text" id="f_PARAJE" placeholder="Nombre del Paraje"></div>
-            <div class="fr"><div class="lf"><label>Manzana</label><input type="text" id="f_MZ" placeholder="Mz."></div><div class="lf"><label>Lote</label><input type="text" id="f_LT" placeholder="Lt."></div></div>
-            <div class="lf"><label>Anexo</label><input type="text" id="f_ANEXO" placeholder="Barrio / Sector"></div>
-            <div class="fr"><div class="lf"><label>Extensión (m²)</label><input type="number" id="f_EXTENSION_NUM" step="0.01" oninput="autoEL()" placeholder="0.00"></div><div class="lf"><label>Perímetro</label><input type="number" id="f_PERIMETRO_NUM" step="0.01" placeholder="0.00 ml"></div></div>
-            <div class="lf"><label>Letras (Autogenerado)</label><input type="text" id="f_EXTENSION_LET" readonly style="background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); color: var(--gn);"></div>
+            <div class="lf"><label>Paraje</label><input type="text" id="f_PARAJE" placeholder="Ej: San Juan"></div>
+            <div class="fr"><div class="lf"><label>Manzana</label><input type="text" id="f_MZ" placeholder="Ej: A"></div><div class="lf"><label>Lote</label><input type="text" id="f_LT" placeholder="Ej: 12"></div></div>
+            <div class="lf"><label>Anexo</label><input type="text" id="f_ANEXO" placeholder="Ej: Barrio Centro"></div>
+            <div class="fr"><div class="lf"><label>Extensión (m²)</label><input type="number" id="f_EXTENSION_NUM" step="0.01" oninput="autoEL()" placeholder="Ej: 200.50"></div><div class="lf"><label>Perímetro</label><input type="number" id="f_PERIMETRO_NUM" step="0.01" placeholder="Ej: 60.00"></div></div>
+            <div class="lf"><label>Letras (Autogenerado)</label><input type="text" id="f_EXTENSION_LET" readonly placeholder="Calculado automáticamente (Ej: DOSCIENTOS...)" style="background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); color: var(--gn);"></div>
         </div></div>
 
         <div class="sec spotlight-card"><div class="sh">Linderos y Medidas Perimétricas</div><div class="sb">
             <table class="lt">
                 <thead><tr><th>Orientación</th><th>Medida (ml)</th><th>Colindante</th></tr></thead>
                 <tbody>
-                    <tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="0.00"></td><td><input type="text" id="f_N_COL" placeholder="Propiedad de..."></td></tr>
-                    <tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="0.00"></td><td><input type="text" id="f_S_COL" placeholder="Propiedad de..."></td></tr>
-                    <tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="0.00"></td><td><input type="text" id="f_E_COL" placeholder="Propiedad de..."></td></tr>
-                    <tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="0.00"></td><td><input type="text" id="f_O_COL" placeholder="Calle / Propiedad..."></td></tr>
+                    <tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="Ej: 12.50"></td><td><input type="text" id="f_N_COL" placeholder="Ej: Calle Principal / Juan Pérez"></td></tr>
+                    <tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="Ej: 12.50"></td><td><input type="text" id="f_S_COL" placeholder="Ej: Propiedad de María López"></td></tr>
+                    <tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="Ej: 16.00"></td><td><input type="text" id="f_E_COL" placeholder="Ej: Propiedad de Carlos Ruiz"></td></tr>
+                    <tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="Ej: 16.00"></td><td><input type="text" id="f_O_COL" placeholder="Ej: Pasaje Sin Nombre"></td></tr>
                 </tbody>
             </table>
         </div></div>
 
         <div class="sec full spotlight-card"><div class="sh">Detalle Documentario</div><div class="sb">
-            <div class="lf"><label>Descripción de Adjudicación / Traspaso</label><textarea id="f_DETALLE_CONS_ADJ" rows="4" placeholder="Ej: Comunidad Campesina de Sicaya adjudica el lote..."></textarea></div>
+            <div class="lf"><label>Descripción de Adjudicación / Traspaso</label><textarea id="f_DETALLE_CONS_ADJ" rows="4" placeholder="Ej: Comunidad Campesina de Sicaya adjudica el lote de terreno a favor del posesionario mediante acta de asamblea de fecha..."></textarea></div>
         </div></div>
     </div>
 </main>
@@ -258,8 +260,50 @@
         } else $('le').style.display = 'block';
     }
     function doLogout() { sessionStorage.removeItem('auth'); location.reload(); }
-    function showApp() { $('lov').classList.add('hid'); ['ah', 'am'].forEach(id => $(id).style.display = 'block'); }
+    
+    function showApp() { 
+        $('lov').classList.add('hid'); 
+        ['ah', 'am'].forEach(id => $(id).style.display = 'block'); 
+        cargarPlantillaAutomatica(); 
+    }
+    
     window.addEventListener('DOMContentLoaded', () => { if(sessionStorage.getItem('auth') === '1') showApp(); });
+
+    /* ====== CARGA AUTOMÁTICA DESDE GITHUB ====== */
+    const TEMPLATE_URL = './CONSTANCIA_POSESION_PLANTILLA.docx';
+
+    async function cargarPlantillaAutomatica() {
+        const tx = $('tplTx'), sub = $('tplSubTx'), bar = $('tplBar'), btn = $('btnLocalDocx');
+        setSt(1);
+        
+        try {
+            const res = await fetch(TEMPLATE_URL);
+            if (!res.ok) throw new Error("Archivo no encontrado en el servidor.");
+            
+            const buf = await res.arrayBuffer();
+            if (buf.byteLength < 500) throw new Error("Archivo corrupto.");
+            
+            if (typeof PizZip === 'undefined') throw new Error("Falla de internet, la librería PizZip no cargó.");
+            tZ = new PizZip(buf);
+            
+            tx.innerHTML = `✅ Plantilla automática conectada`;
+            sub.innerHTML = `El sistema encontró el archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> exitosamente.`;
+            tx.style.color = '#34d399';
+            bar.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            btn.style.display = 'none';
+            $('bG').disabled = false;
+            setSt(2);
+            toast('Plantilla enlazada automáticamente', 'ok');
+
+        } catch (error) {
+            console.error("Fallo auto-carga:", error);
+            tx.innerHTML = `⚠️ Esperando Archivo...`;
+            tx.style.color = '#fca5a5';
+            sub.innerHTML = `Sube el archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> haciendo clic en el botón azul.`;
+            btn.style.display = 'block';
+            toast('Sube el archivo manualmente para continuar.', 'er');
+        }
+    }
 
     /* ====== FUNCIÓN DE CARGA MANUAL ====== */
     function loadLocalTemplate(e) {
@@ -272,9 +316,11 @@
                 if (typeof PizZip === 'undefined') throw new Error("La herramienta interna no cargó. Revisa tu internet.");
                 tZ = new PizZip(evt.target.result);
                 
-                $('tplTx').innerHTML = `✅ Plantilla maestra cargada`;
+                $('tplTx').innerHTML = `✅ Plantilla manual cargada`;
+                $('tplSubTx').innerHTML = `Archivo vinculado: <b>${file.name}</b>`;
                 $('tplTx').style.color = '#34d399';
                 $('tplBar').style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                $('btnLocalDocx').style.display = 'none';
                 $('bG').disabled = false;
                 setSt(2);
                 toast('¡Plantilla procesada correctamente!', 'ok');
@@ -297,7 +343,7 @@
     }
     function addP() {
         const d = document.createElement('div'); d.className = 'pr spotlight-card';
-        d.innerHTML = `<div class="lf"><label>Nombre</label><input type="text" class="pn" placeholder="Nombres"></div><div class="lf"><label>DNI</label><input type="text" class="pd" maxlength="8" placeholder="DNI"></div><button class="btn btn-rd" onclick="this.closest('.pr').remove()">X</button>`;
+        d.innerHTML = `<div class="lf"><label>Nombre</label><input type="text" class="pn" placeholder="Ej: Juan Antonio Pérez Rojas"></div><div class="lf"><label>DNI</label><input type="text" class="pd" maxlength="8" placeholder="Ej: 12345678"></div><button class="btn btn-rd" onclick="this.closest('.pr').remove()">X</button>`;
         $('pl').appendChild(d);
         d.addEventListener('mousemove', e => {
             const rect = d.getBoundingClientRect();
@@ -331,16 +377,37 @@
     /* ====== GENERACIÓN ====== */
     function coll() {
         const p = getP(), g = id => $('f_'+id)?.value||'';
-        return {'N_EXPEDIENTE':g('N_EXPEDIENTE'), 'AÑO':g('AÑO'), 'FECHA_EMISION':g('FECHA_EMISION'), 'FECHA_DOC':g('FECHA_DOC'), 'SEXO':$('f_tipo').value, 'NOMBRE':p.nombre, 'DNI':p.dni, 'PARAJE':g('PARAJE'), 'MZ':g('MZ'), 'LT':g('LT'), 'ANEXO':g('ANEXO'), 'EXTENSION_NUM':g('EXTENSION_NUM'), 'EXTENSION_LET':g('EXTENSION_LET'), 'PERIMETRO_NUM':g('PERIMETRO_NUM'), 'N_NUM':g('N_NUM'), 'N_COL':g('N_COL'), 'S_NUM':g('S_NUM'), 'S_COL':g('S_COL'), 'E_NUM':g('E_NUM'), 'E_COL':g('E_COL'), 'O_NUM':g('O_NUM'), 'O_COL':g('O_COL'), 'DETALLE_CONS_ADJ':g('DETALLE_CONS_ADJ') };
+        return {
+            'N_EXPEDIENTE':g('N_EXPEDIENTE'), 'AÑO':g('AÑO'), 
+            'FECHA_EMISION':g('FECHA_EMISION'), 
+            'FECHA_EMISIÓN':g('FECHA_EMISION'), // Ambas versiones con y sin tilde
+            'FECHA_DOC':g('FECHA_DOC'), 'SEXO':$('f_tipo').value, 
+            'NOMBRE':p.nombre, 'DNI':p.dni, 'PARAJE':g('PARAJE'), 
+            'MZ':g('MZ'), 'LT':g('LT'), 'ANEXO':g('ANEXO'), 
+            'EXTENSION_NUM':g('EXTENSION_NUM'), 'EXTENSION_LET':g('EXTENSION_LET'), 
+            'PERIMETRO_NUM':g('PERIMETRO_NUM'), 'N_NUM':g('N_NUM'), 
+            'N_COL':g('N_COL'), 'S_NUM':g('S_NUM'), 'S_COL':g('S_COL'), 
+            'E_NUM':g('E_NUM'), 'E_COL':g('E_COL'), 'O_NUM':g('O_NUM'), 
+            'O_COL':g('O_COL'), 'DETALLE_CONS_ADJ':g('DETALLE_CONS_ADJ') 
+        };
     }
     
     function eR(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     function eX(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     
+    function valid() {
+        const d = coll();
+        const ms = ['N_EXPEDIENTE', 'AÑO', 'FECHA_EMISION', 'NOMBRE', 'PARAJE', 'LT', 'EXTENSION_NUM'].filter(k => !d[k]?.trim());
+        const p = getP();
+        if (!p.ds.length || p.ds.some(x => !x)) ms.push('DNI');
+        if (ms.length) { toast('Completa los campos: ' + ms.join(', '), 'er'); return null; }
+        return d;
+    }
+
     function generar() {
         if (!tZ) return toast('Carga la plantilla primero', 'er');
-        const d = coll();
-        if(!d.NOMBRE || !d.DNI) return toast('Completa los campos de Nombre y DNI', 'er');
+        const d = valid();
+        if(!d) return;
         
         try {
             const z = new PizZip(tZ.generate({ type: 'arraybuffer' }));
@@ -356,7 +423,6 @@
             });
             gB = z.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
             
-            // Habilitar únicamente botón de Word
             $('bD').disabled = false;
             setSt(3); toast('Documento generado con éxito', 'ok');
         } catch (e) { toast('Error al generar: '+e.message, 'er'); }
