@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catastro Sicaya — Generador de Constancia de Posesión</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.7/pizzip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0b0e14;--sf:#12151e;--ra:#181c28;--inp:#1e2333;--bd:#262d40;--bl:#4a7cff;--bld:rgba(74,124,255,.12);--gn:#22c55e;--gnd:rgba(34,197,94,.12);--am:#f59e0b;--rd:#ef4444;--rdd:rgba(239,68,68,.12);--pp:#a78bfa;--tx:#e2e6f0;--t2:#9ca3b8;--t3:#606880;--r:10px;--rs:7px;--f:'IBM Plex Sans',system-ui,sans-serif}
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--f);background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.55}::selection{background:var(--bl);color:#fff}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+
+        .lov{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .5s,visibility .5s}
+        .lov.hid{opacity:0;visibility:hidden;pointer-events:none}
+        .lcard{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:2.5rem;width:400px;max-width:92vw;box-shadow:0 20px 80px rgba(0,0,0,.5)}
+        .lcard .lr{display:flex;align-items:center;gap:.75rem;margin-bottom:1.75rem}
+        .lcard .logo{width:50px;height:50px;border-radius:13px;background:linear-gradient(135deg,var(--bl),var(--pp));display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff}
+        .lcard .ltt h2{font-size:1.1rem;font-weight:600}.lcard .ltt p{font-size:.78rem;color:var(--t2)}
+        .lf{margin-bottom:1rem}.lf label{display:block;font-size:.78rem;font-weight:500;color:var(--t2);margin-bottom:.3rem}
+        .lf input{width:100%;padding:.7rem .9rem;background:var(--inp);border:1px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:var(--f);font-size:.9rem;outline:none;transition:.2s}
+        .lf input:focus{border-color:var(--bl);box-shadow:0 0 0 3px var(--bld)}
+        .lerr{color:var(--rd);font-size:.8rem;margin-bottom:.75rem;display:none}
+        .lbtn{width:100%;padding:.75rem;background:var(--bl);color:#fff;border:none;border-radius:var(--rs);font-family:var(--f);font-size:.9rem;font-weight:600;cursor:pointer;transition:.2s}.lbtn:hover{background:#3a6aef}
+        .lhint{margin-top:1.25rem;padding:.75rem;background:var(--inp);border-radius:var(--rs);font-size:.75rem;color:var(--t3);line-height:1.5;text-align:center}
+
+        .hdr{background:var(--sf);border-bottom:1px solid var(--bd);padding:1rem 1.5rem;position:sticky;top:0;z-index:100}
+        .hdr-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+        .brand{display:flex;align-items:center;gap:.6rem}
+        .brand .mk{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--bl),var(--pp));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1rem}
+        .brand h1{font-size:1rem;font-weight:600}.brand h1 small{display:block;font-size:.72rem;font-weight:400;color:var(--t2)}
+        .hr{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+        .bdg{font-size:.72rem;font-weight:500;padding:.3rem .65rem;border-radius:20px;display:inline-flex;align-items:center;gap:.35rem}
+        .bdg-off{background:var(--inp);color:var(--t3);border:1px solid var(--bd)}.bdg-on{background:var(--gnd);color:var(--gn);border:1px solid rgba(34,197,94,.3)}
+        .bdg .dt{width:6px;height:6px;border-radius:50%}.bdg-off .dt{background:var(--rd)}.bdg-on .dt{background:var(--gn)}
+
+        .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:var(--rs);font-family:var(--f);font-size:.8rem;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:var(--ra);color:var(--tx);transition:.15s;white-space:nowrap}
+        .btn:hover{background:var(--inp);border-color:var(--t3)}.btn:active{transform:scale(.97)}.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+        .btn-bl{background:var(--bl);border-color:var(--bl);color:#fff;font-weight:600}.btn-bl:hover{background:#3a6aef}
+        .btn-gn{background:#16a34a;border-color:#16a34a;color:#fff;font-weight:600}.btn-gn:hover{background:#15803d}
+        .btn-rd{background:transparent;border-color:var(--rd);color:var(--rd)}.btn-rd:hover{background:var(--rdd)}
+        .btn-am{background:#b45309;border-color:#b45309;color:#fff;font-weight:600}.btn-am:hover{background:#92400e}
+        .btn-gg{background:#fff;border-color:#ddd;color:#333;font-weight:600}.btn-gg:hover{background:#f5f5f5}.btn-gg svg{width:16px;height:16px}
+        .btn-sm{padding:.35rem .65rem;font-size:.75rem}
+        .btn-lo{background:transparent;border:1px solid var(--bd);color:var(--t3);font-size:.75rem}.btn-lo:hover{border-color:var(--rd);color:var(--rd)}
+        .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .5s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+
+        .main{max-width:1100px;margin:0 auto;padding:1.5rem}
+        .steps{display:flex;margin-bottom:1.5rem;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+        .stp{flex:1;padding:.75rem;text-align:center;font-size:.75rem;font-weight:500;color:var(--t3);border-right:1px solid var(--bd);transition:.3s}.stp:last-child{border-right:none}
+        .stp .sn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--inp);font-size:.7rem;font-weight:600;margin-right:.3rem;transition:.3s}
+        .stp.act{color:var(--bl);background:var(--bld)}.stp.act .sn{background:var(--bl);color:#fff}
+        .stp.dn{color:var(--gn)}.stp.dn .sn{background:var(--gn);color:#fff}
+
+        .upz{border:2px dashed var(--bd);border-radius:var(--r);padding:2rem 1.5rem;text-align:center;background:var(--sf);transition:.3s;cursor:pointer;margin-bottom:1.5rem}
+        .upz:hover{border-color:var(--bl);background:var(--bld)}.upz.ok{border-color:var(--gn);background:var(--gnd);border-style:solid}
+        .upz .ic{font-size:2rem;margin-bottom:.5rem}.upz h3{font-size:.9rem;margin-bottom:.2rem}.upz p{font-size:.8rem;color:var(--t2)}.upz input{display:none}
+        .upz .hn{font-size:.72rem;color:var(--t3);margin-top:.5rem}
+
+        .abar{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+        .ag{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}@media(max-width:768px){.grid{grid-template-columns:1fr}}
+        .sec{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+        .sh{padding:.7rem 1rem;font-size:.73rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t2);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:.4rem}
+        .sh .dot{width:7px;height:7px;border-radius:50%;background:var(--bl)}.sb{padding:1rem}
+        .fld{margin-bottom:.85rem}.fld:last-child{margin-bottom:0}
+        .fld label{display:block;font-size:.73rem;font-weight:500;color:var(--t2);margin-bottom:.25rem}
+        .fld label .rq{color:var(--rd)}.fld label .at{color:var(--gn);font-size:.65rem}
+        .fld input,.fld select,.fld textarea{width:100%;padding:.55rem .75rem;background:var(--inp);border:1px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:var(--f);font-size:.85rem;outline:none;transition:.2s}
+        .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--bl);box-shadow:0 0 0 3px var(--bld)}
+        .fld input::placeholder,.fld textarea::placeholder{color:var(--t3)}
+        .fld textarea{resize:vertical;min-height:55px}.fld select{cursor:pointer}.fld select option{background:var(--sf)}
+        .fld .ai{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.25);color:var(--gn);font-style:italic;cursor:default}
+        .fld .ht{font-size:.7rem;color:var(--t3);margin-top:.2rem}
+        .fr{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}.full{grid-column:1/-1}
+
+        .pl{display:flex;flex-direction:column;gap:.6rem}
+        .pr{display:grid;grid-template-columns:1fr 100px auto;gap:.5rem;align-items:end;padding:.5rem;background:var(--inp);border-radius:var(--rs);border:1px solid var(--bd)}
+        .pr .fld{margin-bottom:0}@media(max-width:600px){.pr{grid-template-columns:1fr}}
+        .bap{margin-top:.4rem;font-size:.75rem;color:var(--bl);background:var(--bld);border:1px dashed var(--bl);padding:.4rem .8rem;border-radius:var(--rs);cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:.3rem}.bap:hover{background:var(--bl);color:#fff}
+        .brm{width:28px;height:28px;border-radius:50%;background:var(--rdd);border:1px solid rgba(239,68,68,.3);color:var(--rd);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:.2s;flex-shrink:0}.brm:hover{background:var(--rd);color:#fff}
+        .plbl{font-size:.72rem;color:var(--t3);font-weight:500;margin-bottom:.15rem}
+
+        .lt{width:100%;border-collapse:separate;border-spacing:0}
+        .lt th{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--t3);padding:.4rem .5rem;text-align:left;background:var(--inp);border-bottom:1px solid var(--bd)}
+        .lt td{padding:.25rem .2rem}.lt td:first-child{font-size:.8rem;font-weight:500;color:var(--t2);padding-left:.5rem;width:60px}.lt input{padding:.45rem .6rem;font-size:.82rem}
+
+        .cfg{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;margin-bottom:1.25rem;display:none}.cfg.show{display:block}
+        .cfg h4{font-size:.85rem;margin-bottom:.6rem}
+
+        .tbox{position:fixed;bottom:1rem;right:1rem;z-index:1000;display:flex;flex-direction:column;gap:.4rem}
+        .tst{padding:.7rem 1rem;border-radius:var(--rs);font-size:.82rem;font-weight:500;animation:si .3s;display:flex;align-items:center;gap:.4rem;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+        .t-ok{background:#065f46;color:#a7f3d0;border:1px solid #059669}.t-er{background:#7f1d1d;color:#fca5a5;border:1px solid #dc2626}.t-in{background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6}
+        @keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+        .mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}.mbg.show{display:flex}
+        .mdl{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:1.75rem;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        .mdl h3{font-size:1rem;margin-bottom:.4rem}.mdl p{font-size:.85rem;color:var(--t2);margin-bottom:1rem}.mr{display:flex;gap:.4rem;justify-content:flex-end}
+
+        .pdfp{position:absolute;left:-9999px;top:0;width:794px;font-family:'Times New Roman',serif;color:#000;background:#fff;padding:60px 70px;font-size:12pt;line-height:1.6}
+        .pdfp .el{font-size:11pt;margin-bottom:3px}.pdfp .bt{text-align:justify;margin-bottom:8px;text-indent:40px}.pdfp .bn{text-align:justify;margin-bottom:8px}
+        .pdfp table{width:100%;border-collapse:collapse;margin:10px 0}.pdfp table td{border:1px solid #333;padding:4px 8px;font-size:11pt}
+        .pdfp .ct{text-align:center;font-size:14pt;font-weight:bold;margin:15px 0 5px;text-decoration:underline}
+        .pdfp .ct2{text-align:center;font-size:12pt;font-style:italic;margin:5px 0}
+        .pdfp .lf{text-align:right;margin-top:20px;font-size:11pt}
+        .ft{text-align:center;padding:1.5rem;color:var(--t3);font-size:.72rem;border-top:1px solid var(--bd);margin-top:1.5rem}
+        @media(max-width:640px){.main{padding:.75rem}.hdr{padding:.75rem}.hdr-in{flex-direction:column;align-items:flex-start}.steps{flex-direction:column}.stp{border-right:none;border-bottom:1px solid var(--bd)}.abar{flex-direction:column}.fr{grid-template-columns:1fr}.pr{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="lov" id="lov"><div class="lcard"><div class="lr"><div class="logo">S</div><div class="ltt"><h2>Catastro — Sicaya</h2><p>Sistema de Constancias de Posesión</p></div></div>
+<div class="lf"><label>👤 Usuario</label><input type="text" id="lu" placeholder="Ingrese su usuario" autocomplete="username" autofocus></div>
+<div class="lf"><label>🔒 Contraseña</label><input type="password" id="lp" placeholder="Ingrese su contraseña" autocomplete="current-password"></div>
+<div class="lerr" id="le">⚠ Usuario o contraseña incorrectos</div>
+<button class="lbtn" onclick="doLogin()">Iniciar sesión</button>
+<div class="lhint">🏛 Municipalidad Distrital de Sicaya<br>Gerencia de Desarrollo Territorial e Infraestructura</div></div></div>
+
+<header class="hdr" style="display:none" id="ah"><div class="hdr-in"><div class="brand"><div class="mk">S</div><h1>Constancia de Posesión<small>Municipalidad Distrital de Sicaya</small></h1></div>
+<div class="hr"><div class="bdg bdg-off" id="db"><span class="dt"></span><span id="dbt">Drive: desconectado</span></div>
+<button class="btn btn-gg btn-sm" id="ba" onclick="authG()"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Conectar Drive</button>
+<button class="btn btn-lo btn-sm" onclick="doLogout()">Cerrar sesión</button></div></div></header>
+
+<main class="main" style="display:none" id="am">
+<div class="steps"><div class="stp act" id="s1"><span class="sn">1</span>Cargar plantilla</div><div class="stp" id="s2"><span class="sn">2</span>Completar datos</div><div class="stp" id="s3"><span class="sn">3</span>Generar</div><div class="stp" id="s4"><span class="sn">4</span>Exportar</div></div>
+
+<div class="cfg" id="cp"><h4>⚙️ Configuración Google Drive</h4><div class="fld"><label>Client ID de Google Cloud</label><input type="text" id="ci" placeholder="xxxx.apps.googleusercontent.com"><p class="ht">Google Cloud Console → APIs → Credenciales → OAuth 2.0 (Aplicación web) → Agregar tu URL de GitHub Pages como origen autorizado. Habilitar Google Drive API.</p></div><div style="display:flex;gap:.4rem;justify-content:flex-end;margin-top:.6rem"><button class="btn btn-bl btn-sm" onclick="saveCfg()">Guardar</button><button class="btn btn-sm" onclick="togCfg()">Cerrar</button></div></div>
+
+<div class="upz" id="uz" onclick="document.getElementById('fi').click()"><div class="ic" id="ui">📄</div><h3 id="ut">Cargar plantilla Word (.docx)</h3><p id="ud">Arrastra aquí o haz clic para seleccionar tu plantilla con [PLACEHOLDERS]</p><p class="hn" id="uh">Si subes <code>CONSTANCIA_POSESION_PLANTILLA.docx</code> al mismo repositorio GitHub, se cargará automáticamente</p><input type="file" id="fi" accept=".docx"></div>
+
+<div class="abar"><div class="ag"><button class="btn btn-bl" onclick="generar()" id="bG" disabled>▶ Generar documento</button><button class="btn btn-am" onclick="expPDF()" id="bP" disabled>📑 Exportar PDF</button><button class="btn" onclick="expDOCX()" id="bD" disabled>📥 Descargar Word</button><button class="btn btn-gn" onclick="upDrive()" id="bU" disabled>☁ Subir a Drive</button></div><div class="ag"><button class="btn btn-rd btn-sm" onclick="showM('ml')">🗑 Limpiar</button><button class="btn btn-sm" onclick="togCfg()">⚙ Config</button></div></div>
+
+<div class="grid">
+<div class="sec"><div class="sh"><span class="dot"></span>Datos del Expediente</div><div class="sb"><div class="fr"><div class="fld"><label>N.° Expediente <span class="rq">*</span></label><input type="text" id="f_N_EXPEDIENTE" placeholder="001"></div><div class="fld"><label>Año <span class="rq">*</span></label><input type="text" id="f_AÑO" placeholder="2025"></div></div><div class="fld"><label>Fecha de Emisión <span class="rq">*</span></label><input type="text" id="f_FECHA_EMISION" placeholder="15 de enero de 2025"></div><div class="fld"><label>Fecha del Documento</label><input type="text" id="f_FECHA_DOC" placeholder="20 de enero de 2025"></div></div></div>
+
+<div class="sec"><div class="sh"><span class="dot" style="background:var(--pp)"></span>Solicitante(s)</div><div class="sb"><div class="fld"><label>Tipo <span class="rq">*</span></label><select id="f_tipo" onchange="onTipo()"><option value="el Sr.">Una persona — Masculino (el Sr.)</option><option value="la Sra.">Una persona — Femenino (la Sra.)</option><option value="los Sres.">Varias personas — Masc./Mixto (los Sres.)</option><option value="las Sras.">Varias personas — Femenino (las Sras.)</option></select></div>
+<div class="pl" id="pl"><div class="pr" data-i="0"><div class="fld"><div class="plbl">Persona 1</div><input type="text" class="pn" placeholder="Apellidos y nombres completos"></div><div class="fld"><label>DNI <span class="rq">*</span></label><input type="text" class="pd" placeholder="12345678" maxlength="8"></div><div></div></div></div>
+<button class="bap" id="bAP" style="display:none" onclick="addP()">+ Agregar otra persona</button></div></div>
+
+<div class="sec"><div class="sh"><span class="dot" style="background:var(--gn)"></span>Datos del Predio</div><div class="sb"><div class="fld"><label>Paraje <span class="rq">*</span></label><input type="text" id="f_PARAJE" placeholder="Nombre del paraje"></div><div class="fr"><div class="fld"><label>Manzana</label><input type="text" id="f_MZ" placeholder="A"></div><div class="fld"><label>Lote <span class="rq">*</span></label><input type="text" id="f_LT" placeholder="12"></div></div><div class="fld"><label>Anexo</label><input type="text" id="f_ANEXO" placeholder="Nombre del anexo"></div><div class="fr"><div class="fld"><label>Extensión m² <span class="rq">*</span></label><input type="number" id="f_EXTENSION_NUM" placeholder="200.00" step="0.01" oninput="autoEL()"></div><div class="fld"><label>Perímetro ml</label><input type="number" id="f_PERIMETRO_NUM" placeholder="60.00" step="0.01"></div></div><div class="fld"><label>Extensión en letras <span class="at">AUTOMÁTICO</span></label><input type="text" id="f_EXTENSION_LET" class="ai" readonly placeholder="Se genera automáticamente"></div></div></div>
+
+<div class="sec"><div class="sh"><span class="dot" style="background:var(--am)"></span>Linderos y Medidas</div><div class="sb"><table class="lt"><thead><tr><th></th><th>Medida (ml)</th><th>Colindante</th></tr></thead><tbody><tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="12.50"></td><td><input type="text" id="f_N_COL" placeholder="Colindante"></td></tr><tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="12.50"></td><td><input type="text" id="f_S_COL" placeholder="Colindante"></td></tr><tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="16.00"></td><td><input type="text" id="f_E_COL" placeholder="Colindante"></td></tr><tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="16.00"></td><td><input type="text" id="f_O_COL" placeholder="Colindante"></td></tr></tbody></table></div></div>
+
+<div class="sec full"><div class="sh"><span class="dot" style="background:var(--rd)"></span>Detalle de Constancia de Adjudicación</div><div class="sb"><div class="fld"><textarea id="f_DETALLE_CONS_ADJ" rows="3" placeholder="Comunidad Campesina de..."></textarea></div></div></div>
+</div></main>
+
+<footer class="ft" style="display:none" id="af">Municipalidad Distrital de Sicaya — Gerencia de Desarrollo Territorial e Infraestructura · OPMI</footer>
+<div class="pdfp" id="pp"></div><div class="tbox" id="tb"></div>
+<div class="mbg" id="ml"><div class="mdl"><h3>🗑 Limpiar todo</h3><p>¿Borrar todos los datos?</p><div class="mr"><button class="btn btn-sm" onclick="hideM('ml')">Cancelar</button><button class="btn btn-rd btn-sm" onclick="doLimp()">Sí, limpiar</button></div></div></div>
+<div class="mbg" id="md"><div class="mdl"><h3>☁ Subir a Google Drive</h3><p>Se subirá el documento generado.</p><div class="fld"><label>Nombre</label><input type="text" id="dfn"></div><div class="fld"><label>ID carpeta (opcional)</label><input type="text" id="dfi" placeholder="Vacío = raíz"><p class="ht">Abrir carpeta en Drive → copiar ID de la URL</p></div><div class="mr"><button class="btn btn-sm" onclick="hideM('md')">Cancelar</button><button class="btn btn-gn btn-sm" onclick="doUpDr()">Subir</button></div></div></div>
+
+<script>
+const AH='ba46638dd570a35db2544b3d16d718ea7ca3ab93e9e95032f1cbe61e649d0cd2';
+function $(id){return document.getElementById(id)}
+async function sha(m){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(m));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function doLogin(){const u=$('lu').value.trim(),p=$('lp').value;if(await sha(u+':'+p)===AH){sessionStorage.setItem('a','1');showApp()}else{$('le').style.display='block';$('lp').value=''}}
+function doLogout(){sessionStorage.removeItem('a');location.reload()}
+function showApp(){$('lov').classList.add('hid');['ah','am','af'].forEach(x=>$(x).style.display='');autoLoad()}
+$('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});$('lu').addEventListener('keydown',e=>{if(e.key==='Enter')$('lp').focus()});
+window.addEventListener('DOMContentLoaded',()=>{if(sessionStorage.getItem('a')==='1')showApp();const c=localStorage.getItem('gci');if(c)$('ci').value=c});
+
+let tZ=null,gB=null,gT=null;
+const uz=$('uz'),fi=$('fi');
+['dragenter','dragover'].forEach(e=>uz.addEventListener(e,ev=>{ev.preventDefault();uz.style.borderColor='var(--bl)'}));
+['dragleave','drop'].forEach(e=>uz.addEventListener(e,ev=>{ev.preventDefault();uz.style.borderColor=''}));
+uz.addEventListener('drop',ev=>{if(ev.dataTransfer.files[0])loadT(ev.dataTransfer.files[0])});
+fi.addEventListener('change',ev=>{if(ev.target.files[0])loadT(ev.target.files[0])});
+function loadT(f){if(!f.name.endsWith('.docx'))return toast('Solo .docx','er');const r=new FileReader();r.onload=e=>{try{tZ=new PizZip(e.target.result);tplOK(f.name)}catch(x){toast('Error: '+x.message,'er')}};r.readAsArrayBuffer(f)}
+function tplOK(n){uz.classList.add('ok');$('ui').textContent='✅';$('ut').textContent=n;$('ud').textContent='Plantilla cargada. Complete los datos.';$('uh').style.display='none';$('bG').disabled=false;setSt(2);toast('Plantilla cargada','ok')}
+async function autoLoad(){try{const r=await fetch('CONSTANCIA_POSESION_PLANTILLA.docx');if(!r.ok)return;const b=await r.arrayBuffer();tZ=new PizZip(b);tplOK('CONSTANCIA_POSESION_PLANTILLA.docx (auto)');toast('Plantilla auto-cargada','ok')}catch(e){}}
+
+let pC=1;
+function onTipo(){const v=$('f_tipo').value,m=v==='los Sres.'||v==='las Sras.';$('bAP').style.display=m?'':'none';if(!m){document.querySelectorAll('.pr').forEach((r,i)=>{if(i>0)r.remove()});pC=1}}
+function addP(){pC++;const d=document.createElement('div');d.className='pr';d.innerHTML='<div class="fld"><div class="plbl">Persona '+pC+'</div><input type="text" class="pn" placeholder="Apellidos y nombres"></div><div class="fld"><label>DNI</label><input type="text" class="pd" placeholder="DNI" maxlength="8"></div><button class="brm" onclick="remP(this)">×</button>';$('pl').appendChild(d)}
+function remP(b){b.closest('.pr').remove();pC--}
+function getP(){const n=[],d=[];document.querySelectorAll('.pr').forEach(r=>{const a=r.querySelector('.pn')?.value?.trim()||'',b=r.querySelector('.pd')?.value?.trim()||'';if(a)n.push(a);if(b)d.push(b)});return{nombre:n.join(' y '),dni:d.join(' y '),ns:n,ds:d}}
+
+function nL(n){if(isNaN(n)||n==='')return '';n=parseFloat(n);const e=Math.floor(n),d=Math.round((n-e)*100);let t=cE(e);if(d>0)t+=' con '+cE(d)+'/100';return t+' metros cuadrados'}
+function cE(n){if(n===0)return'cero';if(n===100)return'cien';let r='';if(n>=1000){const m=Math.floor(n/1000);r=m===1?'mil':cE(m)+' mil';n%=1000;if(n>0)r+=' '}if(n>=100){r+=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'][Math.floor(n/100)];n%=100;if(n>0)r+=' '}if(n>=1&&n<=29)r+=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiún','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'][n];else if(n>=30){r+=['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'][Math.floor(n/10)];const u=n%10;if(u>0)r+=' y '+['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'][u]}return r}
+function autoEL(){const v=$('f_EXTENSION_NUM').value;$('f_EXTENSION_LET').value=v?nL(v):''}
+
+function coll(){const p=getP(),sx=$('f_tipo').value,g=id=>$('f_'+id)?.value||'';return{'N_EXPEDIENTE':g('N_EXPEDIENTE'),'AÑO':g('AÑO'),'FECHA_EMISION':g('FECHA_EMISION'),'FECHA_EMISIÓN':g('FECHA_EMISION'),'FECHA_DOC':g('FECHA_DOC'),'SEXO':sx,'NOMBRE':p.nombre,'DNI':p.dni,'PARAJE':g('PARAJE'),'MZ':g('MZ'),'LT':g('LT'),'ANEXO':g('ANEXO'),'EXTENSION_NUM':g('EXTENSION_NUM'),'EXTENSION_LET':g('EXTENSION_LET'),'PERIMETRO_NUM':g('PERIMETRO_NUM'),'N_NUM':g('N_NUM'),'N_COL':g('N_COL'),'S_NUM':g('S_NUM'),'S_COL':g('S_COL'),'E_NUM':g('E_NUM'),'E_COL':g('E_COL'),'O_NUM':g('O_NUM'),'O_COL':g('O_COL'),'DETALLE_CONS_ADJ':g('DETALLE_CONS_ADJ')}}
+function valid(){const d=coll(),ms=['N_EXPEDIENTE','AÑO','FECHA_EMISION','NOMBRE','PARAJE','LT','EXTENSION_NUM'].filter(k=>!d[k]?.trim());const p=getP();if(!p.ds.length||p.ds.some(x=>!x))ms.push('DNI');if(ms.length){toast('Faltan: '+ms.join(', '),'er');return null}return d}
+
+function generar(){if(!tZ)return toast('Cargue plantilla','er');autoEL();const d=valid();if(!d)return;try{const z=new PizZip(tZ.generate({type:'arraybuffer'}));['word/document.xml','word/header1.xml','word/header2.xml','word/header3.xml','word/footer1.xml','word/footer2.xml','word/footer3.xml'].forEach(p=>{try{let c=z.file(p)?.asText();if(!c)return;Object.keys(d).forEach(k=>{c=c.split('['+k+']').join(eX(d[k]))});c=fxS(c,d);z.file(p,c)}catch(e){}});gB=z.generate({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});$('bD').disabled=false;$('bP').disabled=false;if(gT)$('bU').disabled=false;setSt(3);toast('¡Documento generado!','ok')}catch(e){toast('Error: '+e.message,'er')}}
+function eX(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function eR(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function fxS(x,v){Object.keys(v).forEach(k=>{let p='';('['+k+']').split('').forEach((c,i,a)=>{p+=eR(c);if(i<a.length-1)p+='(?:</w:t>(?:<[^>]*>)*<w:t[^>]*>)?'});try{x=x.replace(new RegExp(p,'g'),eX(v[k]))}catch(e){}});return x}
+
+function expDOCX(){if(!gB)return toast('Genere primero','er');const d=coll(),fn='CONSTANCIA_'+nom(d)+'.docx';dl(gB,fn);setSt(4);toast('Word descargado','ok')}
+function dl(b,n){const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u)}
+function nom(d){return((d.NOMBRE||'DOC').replace(/\s+/g,'_')+'_'+new Date().toISOString().slice(0,10).replace(/-/g,'')).substring(0,60)}
+
+function expPDF(){if(!tZ)return toast('Genere primero','er');autoEL();const d=valid();if(!d)return;const p=getP(),dL=p.ds.length>1?'identificados con DNI N.º '+d.DNI:'identificado con DNI N.º '+d.DNI;const h=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+$('pp').innerHTML=`<div class="el"><b>EXPEDIENTE N.º:</b> ${h(d.N_EXPEDIENTE)}-${h(d.AÑO)}</div><div class="el"><b>FECHA DE EMISIÓN:</b> ${h(d.FECHA_EMISION)}</div><br><div class="bn"><b>EL QUE SUSCRIBE:</b></div><div class="bt">La Gerencia de Desarrollo Territorial e Infraestructura de la Municipalidad Distrital de Sicaya, visto el expediente administrativo N.º ${h(d.N_EXPEDIENTE)} de fecha ${h(d.FECHA_EMISION)}, donde ${h(d.SEXO)} ${h(d.NOMBRE)}, ${dL}, solicita "CERTIFICADO DE POSESIÓN" de su predio ubicado en el paraje denominado "${h(d.PARAJE)}", distrito de Sicaya, provincia de Huancayo y departamento de Junín;</div><div class="bt">De conformidad con la Ley N.º 28687, "Ley de desarrollo complementario de formalización de la propiedad informal, acceso al suelo y dotación de servicios básicos", y de acuerdo con el TUPA, se expide la presente "CONSTANCIA REQUERIDA POR EL ADMINISTRADO":</div><div class="ct">CONSTANCIA DE POSESIÓN</div><div class="ct2">(CONSTANCIA REQUERIDA POR EL ADMINISTRADO)</div><br><div class="bt">En la que se evidenció que ${h(d.SEXO)} ${h(d.NOMBRE)}, viene ocupando de manera física el predio ubicado en el Paraje "${h(d.PARAJE)}", Mz. "${h(d.MZ)}", Lote N.º ${h(d.LT)}, distrito de Sicaya, provincia de Huancayo y departamento de Junín, el cual cuenta con una extensión superficial útil de ${h(d.EXTENSION_NUM)} m2 (${h(d.EXTENSION_LET)}), y cuenta con las siguientes características:</div><div class="bn"><b>CUADRO DE ÁREAS:</b></div><table><tr><td>ÁREA DE TERRENO ÚTIL SEGÚN LEVANTAMIENTO PROFESIONAL</td><td>${h(d.EXTENSION_NUM)} m2</td></tr><tr><td>PERÍMETRO ÚTIL SEGÚN LEVANTAMIENTO PROFESIONAL</td><td>${h(d.PERIMETRO_NUM)} ml</td></tr></table><div class="bn"><b>LINDEROS Y MEDIDAS PERIMÉTRICAS DEL ÁREA ÚTIL:</b></div><table><tr><td><b>NORTE</b></td><td>${h(d.N_NUM)}</td><td>${h(d.N_COL)}</td></tr><tr><td><b>SUR</b></td><td>${h(d.S_NUM)}</td><td>${h(d.S_COL)}</td></tr><tr><td><b>ESTE</b></td><td>${h(d.E_NUM)}</td><td>${h(d.E_COL)}</td></tr><tr><td><b>OESTE</b></td><td>${h(d.O_NUM)}</td><td>${h(d.O_COL)}</td></tr></table><div class="bn"><b>SE DEJA CONSTANCIA:</b></div><div class="bt">Dicho predio lo viene ocupando de manera física, como indica en la Constancia de Adjudicación, en la que la "${h(d.DETALLE_CONS_ADJ)}", ubicado en el anexo ${h(d.ANEXO)}, distrito de Sicaya, provincia de Huancayo, región Junín, adjudica el Lote N.º ${h(d.LT)}, Manzana "${h(d.MZ)}" a ${h(d.NOMBRE)}, quien es el actual posesionario del predio en mención. Asimismo, el expediente consta de la Declaración Jurada de Estado Civil, la Declaración Jurada de Posesión, la Declaración Jurada de colindantes, el Plano de Ubicación-Localización y la Memoria Descriptiva a nombre de la solicitante.</div><div class="bt">La ocupación tiene carácter precario, pudiendo disponerse su desocupación o reubicación sin derecho a indemnización.</div><div class="bt">La presente constancia; reconoce únicamente la situación de ocupación existente al momento de su emisión, sin pronunciarse sobre la continuidad, antigüedad o permanencia de la posesión en el tiempo. De tal manera que no constituye ni acredita derecho de propiedad, no acredita titularidad del predio, ni el derecho a habilitar.</div><div class="bt">De acuerdo con el Art. IV, ítem 1.7 Principio de presunción de veracidad, así también acorde al Art. 42 de la Ley 27444; que toda documentación administrativa y técnica proporcionada por el administrado y el profesional, son verdaderos, salvándole de toda responsabilidad Penal, Civil y Administrativa, al Gerente de Desarrollo Territorial e Infraestructura de la Municipalidad Distrital de Sicaya, quien suscribe el presente.</div><div class="bt">Se emite la constancia de Posesión a solicitud del recurrente, en mérito a la Ley N.º 28687 y el artículo 7A de la Constitución Política del Perú donde se reconoce el derecho fundamental de toda persona a acceder progresiva y universalmente a sus servicios básicos y es exclusivamente para dicho fin, así también para fines administrativos, no válido para procesos judiciales.</div><div class="bt">En caso de falsedad de documentos, oposición de terceros o accionar de mala fe, se declarará la nulidad del Certificado y del trámite administrativo en toda su extensión. Asimismo, si se presenta cualquiera de los supuestos previstos en el artículo 10 de la Ley N.º 27444, el presente documento quedará sin efecto.</div><div class="lf">Sicaya, ${h(d.FECHA_DOC)}</div>`;
+const fn='CONSTANCIA_'+nom(d)+'.pdf';toast('Generando PDF...','in');html2pdf().set({margin:[15,18,15,18],filename:fn,image:{type:'jpeg',quality:.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['avoid-all','css','legacy']}}).from($('pp')).save().then(()=>{setSt(4);toast('PDF descargado','ok')}).catch(e=>toast('Error PDF: '+e.message,'er'))}
+
+function authG(){const c=localStorage.getItem('gci')||$('ci').value;if(!c){$('cp').classList.add('show');return toast('Configure Client ID','in')}if(gT){gT=null;updDB(false);return toast('Desconectado','in')}try{google.accounts.oauth2.initTokenClient({client_id:c,scope:'https://www.googleapis.com/auth/drive.file',callback:r=>{if(r.error)return toast('Error: '+r.error,'er');gT=r.access_token;updDB(true);if(gB)$('bU').disabled=false;toast('¡Conectado a Drive!','ok')}}).requestAccessToken()}catch(e){toast('Error: '+e.message,'er');$('cp').classList.add('show')}}
+function updDB(on){$('db').className='bdg '+(on?'bdg-on':'bdg-off');$('dbt').textContent='Drive: '+(on?'conectado':'desconectado');if(!on)$('bU').disabled=true}
+function upDrive(){if(!gB)return toast('Genere primero','er');if(!gT)return authG();$('dfn').value='CONSTANCIA_'+nom(coll())+'.docx';showM('md')}
+async function doUpDr(){const fn=$('dfn').value||'constancia.docx',fid=$('dfi').value.trim();hideM('md');const b=$('bU'),o=b.innerHTML;b.innerHTML='<span class="spin"></span> Subiendo...';b.disabled=true;try{const m={name:fn,mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};if(fid)m.parents=[fid];const f=new FormData();f.append('metadata',new Blob([JSON.stringify(m)],{type:'application/json'}));f.append('file',gB);const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',{method:'POST',headers:{'Authorization':'Bearer '+gT},body:f});if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'HTTP '+r.status)}const res=await r.json();setSt(4);toast('¡Subido! → '+res.name,'ok');if(res.webViewLink)setTimeout(()=>{if(confirm('¿Abrir en Google Drive?'))window.open(res.webViewLink,'_blank')},400)}catch(e){toast('Error: '+e.message,'er');if(e.message.includes('401')){gT=null;updDB(false)}}finally{b.innerHTML=o;b.disabled=!gB||!gT}}
+
+function togCfg(){$('cp').classList.toggle('show')}
+function saveCfg(){const v=$('ci').value.trim();if(v){localStorage.setItem('gci',v);toast('Guardado','ok');togCfg()}else toast('Ingrese Client ID','er')}
+function showM(id){$(id).classList.add('show')}function hideM(id){$(id).classList.remove('show')}
+document.querySelectorAll('.mbg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+function doLimp(){document.querySelectorAll('.sb input,.sb select,.sb textarea').forEach(el=>{if(el.tagName==='SELECT')el.selectedIndex=0;else if(!el.classList.contains('ai'))el.value=''});$('f_EXTENSION_LET').value='';document.querySelectorAll('.pr').forEach((r,i)=>{if(i>0)r.remove()});pC=1;$('bAP').style.display='none';gB=null;$('bD').disabled=true;$('bP').disabled=true;$('bU').disabled=true;hideM('ml');setSt(tZ?2:1);toast('Limpiado','in')}
+function setSt(n){for(let i=1;i<=4;i++){const e=$('s'+i);e.classList.remove('act','dn');if(i<n)e.classList.add('dn');else if(i===n)e.classList.add('act')}}
+function toast(m,t='in'){const c=$('tb'),ic={ok:'✅',er:'❌',in:'ℹ️'},cl={ok:'t-ok',er:'t-er',in:'t-in'},d=document.createElement('div');d.className='tst '+(cl[t]||'t-in');d.innerHTML=(ic[t]||'')+' '+m;c.appendChild(d);setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(100%)';d.style.transition='.3s';setTimeout(()=>d.remove(),300)},4000)}
+</script>
+</body>
+</html>
