@@ -6,1100 +6,333 @@
     <title>Catastro Sicaya Premium — Constancia de Posesión</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
+    <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         /* ===== VARIABLES DE DISEÑO ULTRA-GLASS ===== */
         :root {
-            --bg: #050b14; /* Fondo principal oscuro profundo */
-            
-            /* Estilos de Cristal */
+            --bg: #050b14; 
             --glass-bg: rgba(17, 25, 40, 0.45);       
             --glass-inp: rgba(0, 0, 0, 0.25);        
-            --glass-bd-light: rgba(255, 255, 255, 0.1); /* Brillo superior del cristal */
-            --glass-bd-dark: rgba(255, 255, 255, 0.02); /* Sombra inferior del cristal */
-            
-            /* Colores de Acento */
-            --bl: #3b82f6;           
-            --bl-hover: #60a5fa;
-            --bld: rgba(59, 130, 246, 0.2);
-            --gn: #10b981;           
-            --gnd: rgba(16, 185, 129, 0.2);
-            --am: #f59e0b;           
-            --rd: #ef4444;           
-            --rdd: rgba(239, 68, 68, 0.2);
-            --pp: #8b5cf6;           
-            
-            /* Texto */
-            --tx: #f8fafc;
-            --t2: #cbd5e1;
-            --t3: #94a3b8;
-            
-            /* Radios y Sombras */
-            --r: 24px;               
-            --rs: 12px;              
-            --f: 'Inter', system-ui, sans-serif;
-            --trans: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --bl: #3b82f6; --bl-hover: #60a5fa; --bld: rgba(59, 130, 246, 0.2);
+            --gn: #10b981; --gnd: rgba(16, 185, 129, 0.2);
+            --am: #f59e0b; --rd: #ef4444; --rdd: rgba(239, 68, 68, 0.2);
+            --pp: #8b5cf6; --tx: #f8fafc; --t2: #cbd5e1; --t3: #94a3b8;
+            --r: 24px; --rs: 12px; --f: 'Inter', system-ui, sans-serif;
+            --trans: all 0.3s ease;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: var(--f); background: var(--bg); color: var(--tx); 
             min-height: 100vh; line-height: 1.6; overflow-x: hidden; 
-            /* Fondo con malla radial para darle profundidad */
-            background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), 
-                              radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
             background-attachment: fixed;
         }
         ::selection { background: var(--bl); color: #fff; }
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 5px; border: 2px solid var(--bg); }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
-        /* ===== EFECTO DE SEGUIMIENTO DEL RATÓN (SPOTLIGHT) ===== */
         .spotlight-card {
-            position: relative;
-            overflow: hidden;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--r);
-            border: 1px solid transparent;
-            /* Simulación de bisel 3D de cristal */
-            border-top-color: var(--glass-bd-light);
-            border-left-color: var(--glass-bd-light);
-            border-bottom-color: var(--glass-bd-dark);
-            border-right-color: var(--glass-bd-dark);
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--r); border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        /* El brillo dinámico que sigue al cursor */
-        .spotlight-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.06), transparent 40%);
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .spotlight-card:hover::before { opacity: 1; }
-        .spotlight-card > * { position: relative; z-index: 1; } /* Mantiene el contenido por encima del brillo */
 
-        /* ===== PANTALLA DE LOGIN ===== */
-        .lov {
-            position: fixed; inset: 0; z-index: 9999; background: rgba(5, 11, 20, 0.7);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
-        }
+        .lov { position: fixed; inset: 0; z-index: 9999; background: rgba(5, 11, 20, 0.7); backdrop-filter: blur(25px); display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease, visibility 0.6s ease; }
         .lov.hid { opacity: 0; visibility: hidden; pointer-events: none; }
-        
-        .lcard {
-            padding: 4rem 3.5rem; width: 480px; max-width: 90vw;
-            animation: floatUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+        .lcard { padding: 4rem 3.5rem; width: 480px; max-width: 90vw; }
         .lcard .lr { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; }
-        .lcard .logo {
-            width: 72px; height: 72px; border-radius: 20px;
-            background: linear-gradient(135deg, var(--bl), var(--pp));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: 700; color: #fff;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4), inset 0 2px 4px rgba(255,255,255,0.4);
-        }
-        .lcard .ltt h2 { font-size: 1.8rem; font-weight: 700; color: #fff; letter-spacing: -0.03em; line-height: 1.2; }
-        .lcard .ltt p { font-size: 1rem; color: var(--t2); margin-top: 0.4rem; }
+        .lcard .logo { width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, var(--bl), var(--pp)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; color: #fff; }
+        .lcard .ltt h2 { font-size: 1.8rem; font-weight: 700; color: #fff; letter-spacing: -0.03em; }
         
-        /* Inputs Didácticos */
         .lf { margin-bottom: 1.8rem; position: relative; }
-        .lf label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--t3); margin-bottom: 0.6rem; transition: var(--trans); }
-        .lf input {
-            width: 100%; padding: 1.2rem 1.25rem; background: var(--glass-inp); 
-            border: 1px solid rgba(255,255,255,0.08); border-radius: var(--rs); 
-            color: var(--tx); font-family: var(--f); font-size: 1.05rem;
-            outline: none; transition: var(--trans); backdrop-filter: blur(8px);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .lf input:focus { 
-            border-color: var(--bl); background: rgba(59, 130, 246, 0.05);
-            box-shadow: 0 0 0 4px var(--bld), inset 0 2px 4px rgba(0,0,0,0.2); 
-            transform: translateY(-2px); /* Efecto didáctico de elevación */
-        }
-        .lf input:focus + label, .lf:focus-within label { color: var(--bl-hover); }
-        
-        .lerr { color: #fca5a5; font-size: 0.9rem; margin-bottom: 1.5rem; display: none; font-weight: 500; background: var(--rdd); padding: 1rem; border-radius: var(--rs); border: 1px solid rgba(239, 68, 68, 0.4); animation: shake 0.4s; display: flex; gap: 0.5rem; align-items: center; }
-        
-        .lbtn {
-            width: 100%; padding: 1.2rem; background: linear-gradient(135deg, var(--bl), #4f46e5); color: #fff; border: none;
-            border-radius: var(--rs); font-family: var(--f); font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em;
-            cursor: pointer; transition: var(--trans); box-shadow: 0 8px 25px 0 rgba(59, 130, 246, 0.4);
-            position: relative; overflow: hidden;
-        }
-        .lbtn::after { content:''; position: absolute; top:0; left:-100%; width:50%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: skewX(-20deg); transition: 0.5s; }
-        .lbtn:hover::after { left: 150%; }
-        .lbtn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5); }
-        .lbtn:active { transform: translateY(1px); }
-        
-        .lhint { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.85rem; color: var(--t3); line-height: 1.6; text-align: center; }
+        .lf label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--t3); margin-bottom: 0.6rem; }
+        .lf input, .lf select, .lf textarea { width: 100%; padding: 1.2rem; background: var(--glass-inp); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--rs); color: var(--tx); font-family: var(--f); font-size: 1.05rem; outline: none; transition: var(--trans); backdrop-filter: blur(8px); }
+        .lf input:focus, .lf select:focus, .lf textarea:focus { border-color: var(--bl); background: rgba(59, 130, 246, 0.05); box-shadow: 0 0 0 4px var(--bld); }
+        .lerr { color: #fca5a5; font-size: 0.9rem; margin-bottom: 1.5rem; display: none; background: var(--rdd); padding: 1rem; border-radius: var(--rs); border: 1px solid rgba(239, 68, 68, 0.4); }
+        .lbtn { width: 100%; padding: 1.2rem; background: var(--bl); color: #fff; border: none; border-radius: var(--rs); font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: var(--trans); }
+        .lbtn:hover { background: var(--bl-hover); transform: translateY(-3px); }
 
-        /* ===== CABECERA HEADER ===== */
-        .hdr { background: rgba(5, 11, 20, 0.75); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 100; }
+        .hdr { background: rgba(5, 11, 20, 0.75); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 100; }
         .hdr-in { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
         .brand { display: flex; align-items: center; gap: 1rem; }
-        .brand .mk { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, var(--bl), var(--pp)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 1.4rem; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4), inset 0 2px 4px rgba(255,255,255,0.3); }
-        .brand h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: #fff; }
-        .brand h1 small { display: block; font-size: 0.8rem; font-weight: 500; color: var(--t3); margin-top: 0.15rem; }
+        .brand .mk { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, var(--bl), var(--pp)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 1.4rem; }
+        .brand h1 { font-size: 1.25rem; font-weight: 700; color: #fff; }
         
-        .hr { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .bdg { font-size: 0.8rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid transparent; }
-        .bdg-off { background: rgba(255,255,255,0.05); color: var(--t3); border-color: rgba(255,255,255,0.1); }
-        .bdg-on { background: var(--gnd); color: var(--gn); border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
-        .bdg .dt { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
-        .bdg-off .dt { background: var(--rd); color: var(--rd); }
-        .bdg-on .dt { background: var(--gn); color: var(--gn); }
-
-        /* ===== BOTONES UI ===== */
-        .btn {
-            display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem;
-            border-radius: var(--rs); font-family: var(--f); font-size: 0.95rem; font-weight: 600;
-            cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: var(--tx);
-            transition: var(--trans); white-space: nowrap; outline: none; backdrop-filter: blur(10px);
-        }
-        .btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); }
-        .btn:active { transform: translateY(1px); }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; filter: grayscale(100%); }
-        
-        .btn-bl { background: var(--bl); border-color: var(--bl); color: #fff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-        .btn-bl:hover { background: var(--bl-hover); border-color: var(--bl-hover); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5); }
-        .btn-gn { background: var(--gn); border-color: var(--gn); color: #fff; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn-gn:hover { background: #34d399; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5); border-color: #34d399; }
+        .btn { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; border-radius: var(--rs); font-family: var(--f); font-size: 0.95rem; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: var(--tx); transition: var(--trans); }
+        .btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-bl { background: var(--bl); border-color: var(--bl); color: #fff; }
+        .btn-bl:hover { background: var(--bl-hover); border-color: var(--bl-hover); }
+        .btn-gn { background: var(--gn); border-color: var(--gn); color: #fff; }
+        .btn-gn:hover { background: #34d399; border-color: #34d399; }
         .btn-rd { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
-        .btn-rd:hover { background: var(--rd); color: #fff; box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4); border-color: var(--rd); }
-        .btn-am { background: var(--am); border-color: var(--am); color: #fff; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
-        .btn-am:hover { background: #fbbf24; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5); border-color: #fbbf24; }
-        .btn-gg { background: #fff; color: #1e293b; font-weight: 700; border: none; }
-        .btn-gg:hover { background: #f8fafc; }
-        .btn-gg svg { width: 18px; height: 18px; }
-        
-        .btn-sm { padding: 0.6rem 1.2rem; font-size: 0.85rem; border-radius: 10px; }
-        
-        .spin {
-            display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.2);
-            border-top-color: #fff; border-radius: 50%; animation: sp 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
+        .btn-am { background: var(--am); border-color: var(--am); color: #fff; }
 
-        /* ===== ESTRUCTURA PRINCIPAL ===== */
-        .main { max-width: 1300px; margin: 0 auto; padding: 3rem 1.5rem; animation: fadeIn 0.8s ease; }
-        
-        /* Pasos Didácticos Interactivos */
+        .main { max-width: 1300px; margin: 0 auto; padding: 3rem 1.5rem; }
         .steps { display: flex; margin-bottom: 2.5rem; padding: 0.5rem; gap: 0.5rem; }
-        .stp { flex: 1; padding: 1rem; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--t3); border-radius: var(--rs); transition: var(--trans); display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
-        .stp .sn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.3); font-size: 0.85rem; font-weight: 700; margin-right: 0.8rem; transition: var(--trans); border: 1px solid rgba(255,255,255,0.1); }
-        .stp.act { color: #fff; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); box-shadow: 0 0 20px rgba(59, 130, 246, 0.1); transform: scale(1.02); }
-        .stp.act .sn { background: var(--bl); color: #fff; border-color: var(--bl); box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
-        .stp.dn { color: #a7f3d0; background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); }
-        .stp.dn .sn { background: var(--gn); color: #fff; border-color: var(--gn); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .stp { flex: 1; padding: 1rem; text-align: center; font-size: 0.95rem; font-weight: 600; color: var(--t3); background: rgba(255,255,255,0.02); border-radius: var(--rs); border: 1px solid rgba(255,255,255,0.05); }
+        .stp.act { color: #fff; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
+        .stp.dn { color: #a7f3d0; background: rgba(16, 185, 129, 0.05); }
 
-        /* Barras Superiores */
         .tpl-bar, .abar { padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
-        .tpl-bar.ok { border-color: rgba(16, 185, 129, 0.4) !important; background: rgba(16, 185, 129, 0.08) !important; }
-        .tpl-bar.fail { border-color: rgba(239, 68, 68, 0.4) !important; background: rgba(239, 68, 68, 0.08) !important; }
-        .ag { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-
-        /* GRID Y FORMULARIOS */
+        .tpl-bar.ok { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08); }
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2.5rem; margin-bottom: 3rem; }
         @media(max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
         
-        .sec:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.15); }
-        .sh { padding: 1.25rem 2rem; font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.8rem; background: rgba(0,0,0,0.2); }
-        .sh .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--bl); box-shadow: 0 0 12px var(--bl); }
+        .sh { padding: 1.25rem 2rem; font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); }
         .sb { padding: 2rem; }
-        
-        .fld { margin-bottom: 1.6rem; width: 100%; position: relative; }
-        .fld:last-child { margin-bottom: 0; }
-        .fld label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--t2); margin-bottom: 0.7rem; letter-spacing: 0.02em; transition: var(--trans); }
-        .fld label .rq { color: #fca5a5; margin-left: 3px; font-weight: 800; }
-        .fld label .at { color: #a7f3d0; font-size: 0.75rem; float: right; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); backdrop-filter: blur(4px); }
-        
-        .fld input, .fld select, .fld textarea { 
-            width: 100%; padding: 0.9rem 1.2rem; background: var(--glass-inp); border: 1px solid rgba(255,255,255,0.1); 
-            border-radius: var(--rs); color: #fff; font-family: var(--f); font-size: 1rem; outline: none; transition: var(--trans); 
-            backdrop-filter: blur(5px); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .fld input:focus, .fld select:focus, .fld textarea:focus { 
-            border-color: var(--bl-hover); box-shadow: 0 0 0 4px var(--bld), inset 0 2px 5px rgba(0,0,0,0.2); 
-            background: rgba(59, 130, 246, 0.05); transform: translateY(-2px);
-        }
-        .fld input::placeholder, .fld textarea::placeholder { color: var(--t3); }
-        .fld textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
-        .fld select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23cbd5e1'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1.2rem center; background-size: 1.2rem; padding-right: 3rem; }
-        .fld select option { background: #0f172a; color: #fff; padding: 10px; }
-        
-        /* Didáctico: Inputs Autogenerados */
-        .fld .ai { background: rgba(16, 185, 129, 0.05) !important; border-color: rgba(16, 185, 129, 0.3) !important; color: #6ee7b7; font-style: italic; cursor: not-allowed; font-weight: 600; text-align: center; }
-        .fld .ht { font-size: 0.8rem; color: var(--t3); margin-top: 0.7rem; line-height: 1.5; display: flex; gap: 0.5rem; align-items:flex-start; }
-        .fld .ht::before { content: '💡'; font-size: 0.9rem; }
-        
         .fr { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .full { grid-column: 1 / -1; }
-
-        /* Múltiples Personas */
-        .pl { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 1.5rem;}
-        .pr { display: grid; grid-template-columns: 1fr 160px auto; gap: 1.5rem; align-items: end; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--rs); border: 1px dashed rgba(255,255,255,0.15); transition: var(--trans); animation: slideUp 0.3s ease; }
-        .pr:hover { border-color: var(--bl); background: rgba(59, 130, 246, 0.05); }
-        .pr .fld { margin-bottom: 0; }
+        
+        .pr { display: grid; grid-template-columns: 1fr 160px auto; gap: 1.5rem; align-items: end; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: var(--rs); border: 1px dashed rgba(255,255,255,0.15); margin-bottom:1rem;}
         @media(max-width: 650px) { .pr { grid-template-columns: 1fr; } }
         
-        .bap { font-size: 0.95rem; font-weight: 700; color: var(--bl-hover); background: rgba(59, 130, 246, 0.1); border: 1px dashed rgba(59, 130, 246, 0.4); padding: 1rem 1.5rem; border-radius: var(--rs); cursor: pointer; transition: var(--trans); display: inline-flex; align-items: center; width: 100%; justify-content: center; gap: 0.8rem; }
-        .bap:hover { background: var(--bl); color: #fff; border-style: solid; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); transform: translateY(-2px); }
-        .brm { width: 48px; height: 48px; border-radius: var(--rs); background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; transition: var(--trans); flex-shrink: 0; }
-        .brm:hover { background: var(--rd); color: #fff; transform: scale(1.1) rotate(90deg); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+        .lt { width: 100%; border-collapse: collapse; margin-top: 1rem;}
+        .lt th { text-align: left; padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--t2); }
+        .lt td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        /* Tabla Linderos */
-        .lt { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem;}
-        .lt th { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--t2); padding: 1.2rem 1rem; text-align: left; border-bottom: 2px solid rgba(255,255,255,0.1); letter-spacing: 0.05em; }
-        .lt td { padding: 0.8rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .lt tr:last-child td { border-bottom: none; }
-        .lt td:first-child { font-size: 0.95rem; font-weight: 700; color: #fff; padding-left: 1rem; width: 100px; letter-spacing: 0.03em; text-transform: uppercase; }
-        .lt input { padding: 0.75rem 1rem; font-size: 0.95rem; background: rgba(0,0,0,0.25); border: 1px solid transparent; border-radius: var(--rs);}
-        .lt input:focus { background: rgba(59, 130, 246, 0.05); border-color: var(--bl); }
+        .mbg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
+        .mbg.show { display: flex; }
+        .mdl { padding: 3.5rem; max-width: 550px; width: 92%; }
 
-        /* Configuración */
-        .cfg { display: none; margin-bottom: 3rem; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .cfg.show { display: block; }
-        .cfg h4 { font-size: 1.2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.8rem; color: #fff; font-weight: 700; }
-
-        /* Modales */
-        .mbg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-        .mbg.show { display: flex; animation: fadeIn 0.4s; }
-        .mdl { padding: 3.5rem; max-width: 550px; width: 92%; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .mdl h3 { font-size: 1.6rem; margin-bottom: 1rem; color: #fff; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.8rem;}
-        .mdl p { font-size: 1.05rem; color: var(--t2); margin-bottom: 2.5rem; line-height: 1.6; }
-        .mr { display: flex; gap: 1rem; justify-content: flex-end; }
-
-        /* Toasts Educativos */
         .tbox { position: fixed; bottom: 2.5rem; right: 2.5rem; z-index: 3000; display: flex; flex-direction: column; gap: 1rem; pointer-events: none; }
-        .tst { pointer-events: auto; padding: 1.2rem 1.8rem; border-radius: var(--rs); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 1rem; min-width: 350px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid transparent;}
-        .tst .ic { font-size: 1.5rem; }
-        .t-ok { background: rgba(6, 78, 59, 0.85); color: #a7f3d0; border-color: rgba(16, 185, 129, 0.4); }
-        .t-er { background: rgba(127, 29, 29, 0.85); color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
-        .t-in { background: rgba(30, 58, 138, 0.85); color: #bfdbfe; border-color: rgba(59, 130, 246, 0.4); }
-
-        /* Animaciones */
-        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-8px);} 75% {transform: translateX(8px);} }
-        @keyframes floatUp { from { opacity: 0; transform: translateY(50px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideDown { from { transform: translateY(-20px) scaleY(0.9); opacity: 0; transform-origin: top; } to { transform: translateY(0) scaleY(1); opacity: 1; } }
-        @keyframes popIn { from { transform: scale(0.9) translateY(40px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .tst { pointer-events: auto; padding: 1.2rem 1.8rem; border-radius: var(--rs); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 1rem; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.1); color: #fff; backdrop-filter: blur(10px); transition: 0.4s ease; }
+        .t-ok { border-color: var(--gn); color: #a7f3d0; }
+        .t-er { border-color: var(--rd); color: #fca5a5; }
 
         .pdfp { position: absolute; left: -9999px; top: 0; width: 794px; background: #fff; }
-        .ft { text-align: center; padding: 4rem 1.5rem; color: var(--t3); font-size: 0.9rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 4rem; font-weight: 500; background: rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
 <div class="lov" id="lov">
     <div class="lcard spotlight-card">
-        <div class="lr">
-            <div class="logo">S</div>
-            <div class="ltt">
-                <h2>Catastro — Sicaya</h2>
-                <p>Plataforma de Constancias de Posesión</p>
-            </div>
-        </div>
-        <div class="lf">
-            <label>👤 Nombre de Usuario</label>
-            <input type="text" id="lu" placeholder="Ej: admin" autocomplete="username" autofocus>
-        </div>
-        <div class="lf">
-            <label>🔒 Contraseña de Acceso</label>
-            <input type="password" id="lp" placeholder="Ej: admin" autocomplete="current-password">
-        </div>
-        <div class="lerr" id="le"><span>⚠️</span> Credenciales incorrectas. Intente nuevamente.</div>
-        <button class="lbtn" onclick="doLogin()">Ingresar al Sistema Seguro</button>
-        <div class="lhint">🏛 Municipalidad Distrital de Sicaya<br>Gerencia de Desarrollo Territorial e Infraestructura</div>
+        <div class="lr"><div class="logo">S</div><div class="ltt"><h2>Catastro — Sicaya</h2><p>Acceso Seguro</p></div></div>
+        <div class="lf"><label>Usuario</label><input type="text" id="lu" placeholder="Ej: admin"></div>
+        <div class="lf"><label>Contraseña</label><input type="password" id="lp" placeholder="Ej: admin"></div>
+        <div class="lerr" id="le">Credenciales incorrectas.</div>
+        <button class="lbtn" onclick="doLogin()">Ingresar</button>
     </div>
 </div>
 
 <header class="hdr" style="display:none" id="ah">
     <div class="hdr-in">
-        <div class="brand">
-            <div class="mk">S</div>
-            <h1>Constancia de Posesión<small>Sistema Automatizado — Sicaya</small></h1>
-        </div>
-        <div class="hr">
-            <div class="bdg bdg-off" id="db">
-                <span class="dt"></span><span id="dbt">Nube Drive: Desconectada</span>
-            </div>
-            <button class="btn btn-gg btn-sm" id="ba" onclick="authG()" title="Conectar para subir documentos directamente a Google Drive">
-                <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> 
-                Vincular Nube
-            </button>
-            <button class="btn btn-lo btn-sm" onclick="doLogout()">Cerrar Sesión</button>
-        </div>
+        <div class="brand"><div class="mk">S</div><h1>Constancia de Posesión<small>Sistema Local</small></h1></div>
+        <div class="hr"><button class="btn btn-lo" onclick="doLogout()">Cerrar Sesión</button></div>
     </div>
 </header>
 
 <main class="main" style="display:none" id="am">
     
     <div class="steps spotlight-card">
-        <div class="stp act" id="s1"><span class="sn">1</span> Cargar Plantilla</div>
-        <div class="stp" id="s2"><span class="sn">2</span> Llenar Datos</div>
-        <div class="stp" id="s3"><span class="sn">3</span> Compilar</div>
-        <div class="stp" id="s4"><span class="sn">4</span> Exportar Documento</div>
+        <div class="stp act" id="s1">1. Plantilla</div><div class="stp" id="s2">2. Datos</div>
+        <div class="stp" id="s3">3. Compilar</div><div class="stp" id="s4">4. Exportar</div>
     </div>
 
     <div class="tpl-bar spotlight-card" id="tplBar">
-        <div style="display:flex; align-items:center; gap:1.2rem; flex: 1;">
-            <span class="spin" id="tplIc"></span>
-            <span id="tplTx" style="color:var(--t2); font-size: 1.05rem;">Buscando plantilla maestra en el servidor local...</span>
+        <div style="flex: 1;">
+            <div style="font-size: 1.1rem; color: #fff; font-weight: bold; margin-bottom: 5px;" id="tplTx">Esperando Archivo...</div>
+            <div style="font-size: 0.9rem; color: var(--t3);">Por favor, haz clic en el botón azul para subir tu archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> desde tu computadora.</div>
         </div>
-        <div id="btnLocalDocx" style="display: none; flex-shrink: 0;">
-            <label class="btn btn-bl" style="margin:0; box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); border: 1px solid #93c5fd; cursor: pointer;">
-                <span style="font-size: 1.2rem;">📂</span> Subir Plantilla Manual (.docx)
+        <div>
+            <label class="btn btn-bl" style="cursor: pointer; padding: 1rem 1.5rem;">
+                <span style="font-size: 1.3rem;">📂</span> Seleccionar Archivo (.docx)
                 <input type="file" accept=".docx" style="display:none" onchange="loadLocalTemplate(event)">
             </label>
         </div>
     </div>
 
-    <div class="cfg spotlight-card" id="cp">
-        <h4>⚙️ Configuración Avanzada de Google Drive</h4>
-        <div class="fld">
-            <label>Client ID de Google Cloud OAuth 2.0</label>
-            <input type="text" id="ci" placeholder="Ej: 123456789-abcde.apps.googleusercontent.com">
-            <p class="ht">Ingresa tu Client ID para habilitar la subida de archivos directamente a tu unidad de Drive sin salir del sistema.</p>
-        </div>
-        <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:2rem">
-            <button class="btn" onclick="togCfg()">Cancelar</button>
-            <button class="btn btn-bl" onclick="saveCfg()">Guardar Credencial</button>
-        </div>
-    </div>
-
     <div class="abar spotlight-card">
         <div class="ag">
-            <button class="btn btn-bl" onclick="generar()" id="bG" disabled title="Haz clic aquí una vez que hayas llenado todo el formulario">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                Generar Documento Final
-            </button>
-            <button class="btn btn-am" onclick="expPDF()" id="bP" disabled>📑 Descargar en PDF</button>
-            <button class="btn" onclick="expDOCX()" id="bD" disabled>📥 Descargar en Word</button>
-            <button class="btn btn-gn" onclick="upDrive()" id="bU" disabled>☁ Guardar en Drive</button>
+            <button class="btn btn-bl" onclick="generar()" id="bG" disabled>▶ Generar Documento</button>
+            <button class="btn btn-am" onclick="expPDF()" id="bP" disabled>📑 Descargar PDF</button>
+            <button class="btn" onclick="expDOCX()" id="bD" disabled>📥 Descargar Word</button>
         </div>
-        <div class="ag">
-            <button class="btn btn-rd btn-sm" onclick="showM('ml')">🗑 Vaciar Todo</button>
-            <button class="btn btn-sm" onclick="togCfg()">⚙ Auth Nube</button>
-        </div>
+        <div class="ag"><button class="btn btn-rd" onclick="showM('ml')">🗑 Vaciar Todo</button></div>
     </div>
 
     <div class="grid">
-        
-        <div class="sec spotlight-card">
-            <div class="sh"><span class="dot"></span>Datos Administrativos del Expediente</div>
-            <div class="sb">
-                <div class="fr">
-                    <div class="fld">
-                        <label>N.° de Expediente <span class="rq" title="Obligatorio">*</span></label>
-                        <input type="text" id="f_N_EXPEDIENTE" placeholder="Ej: 001">
-                    </div>
-                    <div class="fld">
-                        <label>Año de Gestión <span class="rq">*</span></label>
-                        <input type="text" id="f_AÑO" placeholder="2025">
-                    </div>
-                </div>
-                <div class="fld">
-                    <label>Fecha de Emisión <span class="rq">*</span></label>
-                    <input type="text" id="f_FECHA_EMISION" placeholder="Ej: 15 de enero de 2025">
-                    <p class="ht">Fecha en que el solicitante inició el trámite administrativo.</p>
-                </div>
-                <div class="fld">
-                    <label>Fecha de Firma del Documento</label>
-                    <input type="text" id="f_FECHA_DOC" placeholder="Ej: 20 de enero de 2025">
-                    <p class="ht">Fecha que aparecerá al final del documento junto a las firmas.</p>
-                </div>
-            </div>
-        </div>
+        <div class="sec spotlight-card"><div class="sh">Expediente</div><div class="sb">
+            <div class="fr"><div class="lf"><label>N.° Expediente</label><input type="text" id="f_N_EXPEDIENTE"></div><div class="lf"><label>Año</label><input type="text" id="f_AÑO"></div></div>
+            <div class="lf"><label>Fecha Emisión</label><input type="text" id="f_FECHA_EMISION"></div>
+            <div class="lf"><label>Fecha Firma</label><input type="text" id="f_FECHA_DOC"></div>
+        </div></div>
 
-        <div class="sec spotlight-card">
-            <div class="sh"><span class="dot" style="background:var(--pp); box-shadow: 0 0 12px var(--pp);"></span>Información del Solicitante(s)</div>
-            <div class="sb">
-                <div class="fld">
-                    <label>Tipo de Titularidad <span class="rq">*</span></label>
-                    <select id="f_tipo" onchange="onTipo()">
-                        <option value="el Sr.">Persona individual — Masculino (el Sr.)</option>
-                        <option value="la Sra.">Persona individual — Femenino (la Sra.)</option>
-                        <option value="los Sres.">Pluralidad — Masculino / Mixto (los Sres.)</option>
-                        <option value="las Sras.">Pluralidad — Femenino (las Sras.)</option>
-                    </select>
-                </div>
-                <div class="pl" id="pl">
-                    <div class="pr" data-i="0">
-                        <div class="fld">
-                            <div style="font-size:0.8rem; color:var(--bl); font-weight:800; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Titular Principal</div>
-                            <input type="text" class="pn" placeholder="Nombres y Apellidos completos">
-                        </div>
-                        <div class="fld">
-                            <label>DNI N° <span class="rq">*</span></label>
-                            <input type="text" class="pd" placeholder="12345678" maxlength="8">
-                        </div>
-                        <div></div>
-                    </div>
-                </div>
-                <button class="bap" id="bAP" style="display:none" onclick="addP()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Añadir Copropietario
-                </button>
+        <div class="sec spotlight-card"><div class="sh">Solicitante(s)</div><div class="sb">
+            <div class="lf"><label>Tipo</label><select id="f_tipo" onchange="onTipo()"><option value="el Sr.">Masculino</option><option value="la Sra.">Femenino</option><option value="los Sres.">Plural</option></select></div>
+            <div class="pl" id="pl">
+                <div class="pr"><div class="lf"><label>Nombre Completo</label><input type="text" class="pn"></div><div class="lf"><label>DNI</label><input type="text" class="pd" maxlength="8"></div></div>
             </div>
-        </div>
+            <button class="btn" id="bAP" style="display:none; width: 100%; justify-content:center;" onclick="addP()">+ Añadir Persona</button>
+        </div></div>
 
-        <div class="sec spotlight-card">
-            <div class="sh"><span class="dot" style="background:var(--gn); box-shadow: 0 0 12px var(--gn);"></span>Ubicación y Área del Predio</div>
-            <div class="sb">
-                <div class="fld"><label>Nombre del Paraje <span class="rq">*</span></label><input type="text" id="f_PARAJE" placeholder="Ej: San Juan"></div>
-                <div class="fr">
-                    <div class="fld"><label>Manzana (Mz.)</label><input type="text" id="f_MZ" placeholder="Ej: A"></div>
-                    <div class="fld"><label>Lote N° <span class="rq">*</span></label><input type="text" id="f_LT" placeholder="12"></div>
-                </div>
-                <div class="fld"><label>Sector / Anexo</label><input type="text" id="f_ANEXO" placeholder="Ej: Centro"></div>
-                <div class="fr">
-                    <div class="fld">
-                        <label>Extensión Total (m²) <span class="rq">*</span></label>
-                        <input type="number" id="f_EXTENSION_NUM" placeholder="200.00" step="0.01" oninput="autoEL()">
-                    </div>
-                    <div class="fld">
-                        <label>Perímetro (ml)</label>
-                        <input type="number" id="f_PERIMETRO_NUM" placeholder="60.00" step="0.01">
-                    </div>
-                </div>
-                <div class="fld">
-                    <label>Área expresada en Letras <span class="at">AUTOGENERADO</span></label>
-                    <input type="text" id="f_EXTENSION_LET" class="ai" readonly placeholder="Se escribirá automáticamente al ingresar el área en m²">
-                </div>
-            </div>
-        </div>
+        <div class="sec spotlight-card"><div class="sh">Predio</div><div class="sb">
+            <div class="lf"><label>Paraje</label><input type="text" id="f_PARAJE"></div>
+            <div class="fr"><div class="lf"><label>Manzana</label><input type="text" id="f_MZ"></div><div class="lf"><label>Lote</label><input type="text" id="f_LT"></div></div>
+            <div class="lf"><label>Anexo</label><input type="text" id="f_ANEXO"></div>
+            <div class="fr"><div class="lf"><label>Extensión (m²)</label><input type="number" id="f_EXTENSION_NUM" step="0.01" oninput="autoEL()"></div><div class="lf"><label>Perímetro</label><input type="number" id="f_PERIMETRO_NUM"></div></div>
+            <div class="lf"><label>Letras</label><input type="text" id="f_EXTENSION_LET" readonly style="background: rgba(16,185,129,0.1); border-color: var(--gn); color: var(--gn);"></div>
+        </div></div>
 
-        <div class="sec spotlight-card">
-            <div class="sh"><span class="dot" style="background:var(--am); box-shadow: 0 0 12px var(--am);"></span>Linderos y Medidas Perimétricas</div>
-            <div class="sb">
-                <table class="lt">
-                    <thead><tr><th>Orientación</th><th>Medida (Metros)</th><th>Nombre del Colindante</th></tr></thead>
-                    <tbody>
-                        <tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="Ej: 12.50"></td><td><input type="text" id="f_N_COL" placeholder="Propiedad de..."></td></tr>
-                        <tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="Ej: 12.50"></td><td><input type="text" id="f_S_COL" placeholder="Propiedad de..."></td></tr>
-                        <tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="Ej: 16.00"></td><td><input type="text" id="f_E_COL" placeholder="Propiedad de..."></td></tr>
-                        <tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="Ej: 16.00"></td><td><input type="text" id="f_O_COL" placeholder="Camino principal / Propiedad..."></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <div class="sec spotlight-card"><div class="sh">Linderos</div><div class="sb">
+            <table class="lt">
+                <tr><td>Norte</td><td><input type="text" id="f_N_NUM" placeholder="Medida"></td><td><input type="text" id="f_N_COL" placeholder="Colindante"></td></tr>
+                <tr><td>Sur</td><td><input type="text" id="f_S_NUM" placeholder="Medida"></td><td><input type="text" id="f_S_COL" placeholder="Colindante"></td></tr>
+                <tr><td>Este</td><td><input type="text" id="f_E_NUM" placeholder="Medida"></td><td><input type="text" id="f_E_COL" placeholder="Colindante"></td></tr>
+                <tr><td>Oeste</td><td><input type="text" id="f_O_NUM" placeholder="Medida"></td><td><input type="text" id="f_O_COL" placeholder="Colindante"></td></tr>
+            </table>
+        </div></div>
 
-        <div class="sec full spotlight-card">
-            <div class="sh"><span class="dot" style="background:var(--rd); box-shadow: 0 0 12px var(--rd);"></span>Detalle Documentario de Adjudicación</div>
-            <div class="sb">
-                <div class="fld">
-                    <label>Descripción de Adjudicación o Traspaso</label>
-                    <textarea id="f_DETALLE_CONS_ADJ" rows="3" placeholder="Ej: Comunidad Campesina de Sicaya adjudica el lote... Describa los antecedentes de cómo obtuvo la posesión."></textarea>
-                    <p class="ht">Este texto se insertará textualmente en el párrafo de 'Se Deja Constancia' del documento.</p>
-                </div>
-            </div>
-        </div>
-
+        <div class="sec full spotlight-card"><div class="sh">Detalle Documentario</div><div class="sb">
+            <div class="lf"><label>Descripción</label><textarea id="f_DETALLE_CONS_ADJ" rows="3"></textarea></div>
+        </div></div>
     </div>
 </main>
 
-<footer class="ft" style="display:none" id="af">
-    <strong>Municipalidad Distrital de Sicaya</strong><br>
-    Gerencia de Desarrollo Territorial e Infraestructura · OPMI<br>
-    <span style="color: var(--t3); font-size: 0.8rem; margin-top:0.5rem; display:block;">&copy; 2026 — Plataforma de Gestión Documental Inteligente</span>
-</footer>
-
 <div class="tbox" id="tb"></div>
 
-<div class="mbg" id="ml">
-    <div class="mdl spotlight-card">
-        <h3><span style="font-size: 1.8rem;">🗑</span> Vaciar Formulario Completo</h3>
-        <p>¿Estás completamente seguro de que deseas borrar todos los datos ingresados en pantalla? Esta acción es irreversible y tendrás que escribir todo de nuevo.</p>
-        <div class="mr">
-            <button class="btn btn-lo" onclick="hideM('ml')">Cancelar</button>
-            <button class="btn btn-rd" onclick="doLimp()">Sí, borrar todo</button>
-        </div>
-    </div>
-</div>
-
-<div class="mbg" id="md">
-    <div class="mdl spotlight-card">
-        <h3><span style="font-size: 1.8rem;">☁</span> Guardar en Nube (Google Drive)</h3>
-        <p>El documento Microsoft Word (.docx) que acabas de autogenerar se enviará directamente a tu almacenamiento en la nube.</p>
-        <div class="fld"><label>Nombre del archivo final</label><input type="text" id="dfn"></div>
-        <div class="fld">
-            <label>ID de la Carpeta Destino (Opcional)</label>
-            <input type="text" id="dfi" placeholder="Dejar en blanco para guardar en 'Mi Unidad'">
-            <p class="ht">Tip: Ve a la carpeta en Google Drive y copia el código alfanumérico que está al final de la URL en tu navegador.</p>
-        </div>
-        <div class="mr">
-            <button class="btn btn-lo" onclick="hideM('md')">Cancelar</button>
-            <button class="btn btn-gn" onclick="doUpDr()">Confirmar y Subir</button>
-        </div>
-    </div>
-</div>
+<div class="mbg" id="ml"><div class="mdl spotlight-card">
+    <h3>🗑 Vaciar Formulario</h3><p>¿Borrar todo?</p>
+    <div class="mr"><button class="btn" onclick="hideM('ml')">Cancelar</button><button class="btn btn-rd" onclick="doLimp()">Sí, borrar</button></div>
+</div></div>
 
 <script>
-    /* =========================================
-       0. EFECTO SPOTLIGHT (SEGUIMIENTO DE RATÓN)
-       ========================================= */
-    document.addEventListener('mousemove', e => {
-        document.querySelectorAll('.spotlight-card').forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
-        });
-    });
-
-    /* =========================================
-       1. UTILIDADES Y ESTADO GLOBAL
-       ========================================= */
     const $ = (id) => document.getElementById(id);
-    let tZ = null; // PizZip template
-    let gB = null; // Generated Blob
-    let gT = null; // Google Auth Token
+    let tZ = null, gB = null;
 
     function toast(m, t = 'in') {
-        const c = $('tb');
-        const ic = { ok: '✅', er: '❌', in: 'ℹ️', am: '⚠️' };
-        const cl = { ok: 't-ok', er: 't-er', in: 't-in', am: 't-er' };
-        const d = document.createElement('div');
-        d.className = `tst ${cl[t] || 't-in'}`;
-        d.innerHTML = `<span class="ic">${ic[t] || ''}</span> <span>${m}</span>`;
+        const c = $('tb'), d = document.createElement('div');
+        d.className = `tst ${t === 'ok' ? 't-ok' : (t === 'er' ? 't-er' : '')}`;
+        d.innerHTML = `<span>${m}</span>`;
         c.appendChild(d);
-        setTimeout(() => {
-            d.style.transform = 'translateX(130%)';
-            d.style.opacity = '0';
-            setTimeout(() => d.remove(), 500);
-        }, 4500);
+        setTimeout(() => { d.style.transform = 'translateX(130%)'; d.style.opacity = '0'; setTimeout(() => d.remove(), 500); }, 4500);
     }
 
-    /* =========================================
-       2. LÓGICA DE ACCESO (LOGIN)
-       ========================================= */
     function doLogin() {
-        const u = $('lu').value.trim();
-        const p = $('lp').value;
-        
-        // CREDENCIALES: admin / admin
-        if (u === 'admin' && p === 'admin') {
-            sessionStorage.setItem('auth_sicaya_premium', '1');
-            showApp();
-        } else {
-            $('le').style.display = 'flex';
-            $('lp').value = '';
-            $('lov').querySelector('.lcard').style.animation = 'shake 0.4s';
-            setTimeout(() => $('lov').querySelector('.lcard').style.animation = 'none', 400);
-        }
+        if ($('lu').value === 'admin' && $('lp').value === 'admin') {
+            sessionStorage.setItem('auth', '1'); showApp();
+        } else $('le').style.display = 'block';
     }
+    function doLogout() { sessionStorage.removeItem('auth'); location.reload(); }
+    function showApp() { $('lov').classList.add('hid'); ['ah', 'am'].forEach(id => $(id).style.display = 'block'); }
+    window.addEventListener('DOMContentLoaded', () => { if(sessionStorage.getItem('auth') === '1') showApp(); });
 
-    function doLogout() {
-        sessionStorage.removeItem('auth_sicaya_premium');
-        location.reload();
-    }
-
-    function showApp() {
-        $('lov').classList.add('hid');
-        ['ah', 'am', 'af'].forEach(id => { $(id).style.display = 'block'; });
-        cargarPlantilla();
-    }
-
-    $('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin() });
-    $('lu').addEventListener('keydown', e => { if (e.key === 'Enter') $('lp').focus() });
-    
-    window.addEventListener('DOMContentLoaded', () => {
-        if (sessionStorage.getItem('auth_sicaya_premium') === '1') showApp();
-        const c = localStorage.getItem('gci_sicaya_premium');
-        if (c) $('ci').value = c;
-    });
-
-    /* =========================================
-       3. CARGA DE PLANTILLA LOCAL (.docx)
-       ========================================= */
-    // ACTUALIZADO AL NUEVO NOMBRE DEL DOCUMENTO LOCAL
-    const TEMPLATE_NAME = './CONSTANCIA_POSESION_PLANTILLA.docx';
-
-    async function cargarPlantilla() {
-        const bar = $('tplBar'), ic = $('tplIc'), tx = $('tplTx');
-        setSt(1);
-        tx.textContent = 'Enlazando con plantilla maestra del servidor...';
-        $('btnLocalDocx').style.display = 'none';
-
-        try {
-            const r = await fetch(TEMPLATE_NAME);
-            
-            if (!r.ok) {
-                throw new Error(`No se encontró el archivo: ${TEMPLATE_NAME.replace('./', '')}`);
-            }
-            
-            const buf = await r.arrayBuffer();
-            if (buf.byteLength < 500) throw new Error('El archivo está dañado o vacío.');
-            
-            tZ = new PizZip(buf);
-            ic.className = ''; ic.innerHTML = '<span style="font-size:1.4rem;">✅</span>';
-            tx.innerHTML = 'Motor de plantillas listo y conectado <b>(Archivo Encontrado)</b>';
-            tx.style.color = '#34d399';
-            bar.classList.remove('fail');
-            bar.classList.add('ok');
-            $('bG').disabled = false;
-            setSt(2);
-            toast('El sistema está listo para usar.', 'ok');
-            
-        } catch(e) {
-            console.error("Error al cargar la plantilla:", e);
-            ic.className = ''; ic.innerHTML = '<span style="font-size:1.4rem;">⚠️</span>';
-            
-            tx.innerHTML = `Fallo crítico de conexión: <b>${e.message}</b><br><span style="font-size:0.85rem; color:var(--tx); font-weight: normal; opacity:0.8;">Verifica que el archivo esté subido a GitHub en la misma carpeta que el código. Por ahora, súbela manual.</span>`;
-            tx.style.color = '#fca5a5';
-            bar.classList.remove('ok');
-            bar.classList.add('fail');
-            
-            // Mostrar botón para carga manual en caso de error
-            $('btnLocalDocx').style.display = 'block';
-            toast('Por favor, selecciona el archivo manualmente para continuar.', 'am');
-        }
-    }
-
-    // CARGA MANUAL (Plan de respaldo infalible)
+    /* ====== 1. FUNCIÓN DE CARGA MANUAL (ESTRICTA) ====== */
     function loadLocalTemplate(e) {
         const file = e.target.files[0];
         if(!file) return;
+
         const reader = new FileReader();
         reader.onload = function(evt) {
             try {
+                // Verificar si la librería cargó bien
+                if (typeof PizZip === 'undefined') throw new Error("La herramienta PizZip no ha cargado. Revisa tu internet.");
+                
                 tZ = new PizZip(evt.target.result);
-                $('tplIc').className = '';
-                $('tplIc').innerHTML = '<span style="font-size:1.4rem;">✅</span>';
-                $('tplTx').innerHTML = `Plantilla vinculada manualmente: <b>${file.name}</b>`;
+                
+                // Actualizar UI
+                $('tplTx').innerHTML = `✅ Plantilla cargada: <b>${file.name}</b>`;
                 $('tplTx').style.color = '#34d399';
-                $('tplBar').classList.remove('fail');
-                $('tplBar').classList.add('ok');
-                $('btnLocalDocx').style.display = 'none';
+                $('tplBar').style.borderColor = 'rgba(16, 185, 129, 0.4)';
                 $('bG').disabled = false;
                 setSt(2);
-                toast('Archivo local cargado correctamente. Puedes continuar.', 'ok');
+                toast('¡Plantilla procesada correctamente!', 'ok');
             } catch(err) {
-                toast('El archivo seleccionado es inválido o no es formato Word (.docx).', 'er');
+                console.error(err);
+                toast('Error: ' + err.message, 'er');
             }
+            // Limpiar input para permitir seleccionar de nuevo si falla
+            e.target.value = '';
         };
+        reader.onerror = function() { toast('Error de lectura en el navegador.', 'er'); };
         reader.readAsArrayBuffer(file);
     }
 
-    /* =========================================
-       4. LÓGICA DEL FORMULARIO Y PERSONAS
-       ========================================= */
+    /* ====== LÓGICA DEL FORMULARIO ====== */
     let pC = 1;
-
     function onTipo() {
-        const v = $('f_tipo').value;
-        const m = (v === 'los Sres.' || v === 'las Sras.');
-        $('bAP').style.display = m ? 'inline-flex' : 'none';
-        
-        if (!m) {
-            document.querySelectorAll('.pr').forEach((r, i) => { if (i > 0) r.remove(); });
-            pC = 1;
-        }
+        const m = ['los Sres.', 'las Sras.'].includes($('f_tipo').value);
+        $('bAP').style.display = m ? 'flex' : 'none';
+        if (!m) { document.querySelectorAll('.pr').forEach((r, i) => { if (i > 0) r.remove(); }); pC = 1; }
     }
-
     function addP() {
-        pC++;
-        const d = document.createElement('div');
-        d.className = 'pr spotlight-card';
-        d.innerHTML = `
-            <div class="fld">
-                <div style="font-size:0.8rem; color:var(--bl-hover); font-weight:800; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Copropietario ${pC}</div>
-                <input type="text" class="pn" placeholder="Nombres y Apellidos">
-            </div>
-            <div class="fld"><label>DNI N°</label><input type="text" class="pd" placeholder="DNI" maxlength="8"></div>
-            <button class="brm" onclick="remP(this)" title="Quitar este titular">×</button>
-        `;
+        const d = document.createElement('div'); d.className = 'pr spotlight-card';
+        d.innerHTML = `<div class="lf"><label>Nombre</label><input type="text" class="pn"></div><div class="lf"><label>DNI</label><input type="text" class="pd"></div><button class="btn btn-rd" onclick="this.closest('.pr').remove()">X</button>`;
         $('pl').appendChild(d);
-        // Pequeño hack para forzar el bind del mousemove a este nuevo elemento dinámico
-        d.addEventListener('mousemove', e => {
-            const rect = d.getBoundingClientRect();
-            d.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-            d.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-        });
     }
-
-    function remP(b) {
-        b.closest('.pr').remove();
-        pC--;
-    }
-
     function getP() {
-        const n = [], d = [];
-        document.querySelectorAll('.pr').forEach(r => {
-            const a = r.querySelector('.pn')?.value?.trim() || '';
-            const b = r.querySelector('.pd')?.value?.trim() || '';
-            if (a) n.push(a);
-            if (b) d.push(b);
+        const n=[], d=[];
+        document.querySelectorAll('.pr').forEach(r=>{ 
+            const a=r.querySelector('.pn')?.value||'', b=r.querySelector('.pd')?.value||''; 
+            if(a)n.push(a); if(b)d.push(b); 
         });
         return { nombre: n.join(' y '), dni: d.join(' y '), ds: d };
     }
-
-    // Algoritmo: Números a Letras de Área
-    function nL(n) {
-        if (isNaN(n) || n === '') return '';
-        n = parseFloat(n);
-        const e = Math.floor(n), dec = Math.round((n - e) * 100);
-        let t = cE(e);
-        if (dec > 0) t += ` con ${cE(dec)}/100`;
-        return (t + ' metros cuadrados').toUpperCase();
+    function autoEL() {
+        const v = $('f_EXTENSION_NUM').value;
+        if(!v) return $('f_EXTENSION_LET').value = '';
+        const e=Math.floor(v), dec=Math.round((v-e)*100);
+        $('f_EXTENSION_LET').value = (cE(e) + (dec>0?` con ${cE(dec)}/100`:'') + ' metros cuadrados').toUpperCase();
     }
-
     function cE(n) {
-        if (n === 0) return 'cero'; if (n === 100) return 'cien';
-        let r = '';
-        if (n >= 1000) { const m = Math.floor(n / 1000); r = (m === 1 ? 'mil' : cE(m) + ' mil'); n %= 1000; if (n > 0) r += ' '; }
-        if (n >= 100) { r += ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'][Math.floor(n / 100)]; n %= 100; if (n > 0) r += ' '; }
-        if (n >= 1 && n <= 29) r += ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte', 'veintiún', 'veintidós', 'veintitrés', 'veinticuatro', 'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve'][n];
-        else if (n >= 30) {
-            r += ['', '', '', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'][Math.floor(n / 10)];
-            const u = n % 10;
-            if (u > 0) r += ' y ' + ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'][u];
-        }
+        if(n===0) return 'cero'; if(n===100) return 'cien'; let r='';
+        if(n>=1000){ const m=Math.floor(n/1000); r=(m===1?'mil':cE(m)+' mil'); n%=1000; if(n>0)r+=' ';}
+        if(n>=100){ r+=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'][Math.floor(n/100)]; n%=100; if(n>0)r+=' ';}
+        if(n>=1&&n<=29) r+=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiún','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'][n];
+        else if(n>=30){ r+=['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'][Math.floor(n/10)]; const u=n%10; if(u>0)r+=' y '+['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'][u];}
         return r;
     }
 
-    function autoEL() {
-        const v = $('f_EXTENSION_NUM').value;
-        $('f_EXTENSION_LET').value = v ? nL(v) : '';
-    }
-
-    /* =========================================
-       5. COMPILACIÓN Y GENERACIÓN DOCX
-       ========================================= */
+    /* ====== GENERACIÓN ====== */
     function coll() {
-        const p = getP();
-        const sx = $('f_tipo').value;
-        const g = id => $('f_' + id)?.value || '';
-        return {
-            'N_EXPEDIENTE': g('N_EXPEDIENTE'), 'AÑO': g('AÑO'), 'FECHA_EMISION': g('FECHA_EMISION'),
-            'FECHA_DOC': g('FECHA_DOC'), 'SEXO': sx, 'NOMBRE': p.nombre, 'DNI': p.dni,
-            'PARAJE': g('PARAJE'), 'MZ': g('MZ'), 'LT': g('LT'), 'ANEXO': g('ANEXO'),
-            'EXTENSION_NUM': g('EXTENSION_NUM'), 'EXTENSION_LET': g('EXTENSION_LET'),
-            'PERIMETRO_NUM': g('PERIMETRO_NUM'), 'N_NUM': g('N_NUM'), 'N_COL': g('N_COL'),
-            'S_NUM': g('S_NUM'), 'S_COL': g('S_COL'), 'E_NUM': g('E_NUM'), 'E_COL': g('E_COL'),
-            'O_NUM': g('O_NUM'), 'O_COL': g('O_COL'), 'DETALLE_CONS_ADJ': g('DETALLE_CONS_ADJ')
-        };
+        const p = getP(), g = id => $('f_'+id)?.value||'';
+        return {'N_EXPEDIENTE':g('N_EXPEDIENTE'), 'AÑO':g('AÑO'), 'FECHA_EMISION':g('FECHA_EMISION'), 'FECHA_DOC':g('FECHA_DOC'), 'SEXO':$('f_tipo').value, 'NOMBRE':p.nombre, 'DNI':p.dni, 'PARAJE':g('PARAJE'), 'MZ':g('MZ'), 'LT':g('LT'), 'ANEXO':g('ANEXO'), 'EXTENSION_NUM':g('EXTENSION_NUM'), 'EXTENSION_LET':g('EXTENSION_LET'), 'PERIMETRO_NUM':g('PERIMETRO_NUM'), 'N_NUM':g('N_NUM'), 'N_COL':g('N_COL'), 'S_NUM':g('S_NUM'), 'S_COL':g('S_COL'), 'E_NUM':g('E_NUM'), 'E_COL':g('E_COL'), 'O_NUM':g('O_NUM'), 'O_COL':g('O_COL'), 'DETALLE_CONS_ADJ':g('DETALLE_CONS_ADJ') };
     }
-
-    function valid() {
-        const d = coll();
-        const ms = ['N_EXPEDIENTE', 'AÑO', 'FECHA_EMISION', 'NOMBRE', 'PARAJE', 'LT', 'EXTENSION_NUM'].filter(k => !d[k]?.trim());
-        const p = getP();
-        
-        if (!p.ds.length || p.ds.some(x => !x)) ms.push('DNI N°');
-        if (ms.length) {
-            toast('Por favor, completa los campos obligatorios: ' + ms.join(', '), 'er');
-            return null;
-        }
-        return d;
-    }
-
-    function generar() {
-        if (!tZ) return toast('El sistema requiere la plantilla maestra para continuar.', 'er');
-        autoEL();
-        const d = valid();
-        if (!d) return;
-        
-        const b = $('bG');
-        const o = b.innerHTML;
-        b.innerHTML = '<span class="spin"></span> Compilando datos...';
-        
-        setTimeout(() => {
-            try {
-                const z = new PizZip(tZ.generate({ type: 'arraybuffer' }));
-                const parts = ['word/document.xml', 'word/header1.xml', 'word/header2.xml', 'word/header3.xml', 'word/footer1.xml', 'word/footer2.xml', 'word/footer3.xml'];
-                
-                parts.forEach(part => {
-                    let text = z.file(part)?.asText();
-                    if (!text) return;
-                    
-                    Object.keys(d).forEach(k => {
-                        text = text.split(`[${k}]`).join(eX(d[k]));
-                    });
-                    
-                    text = fxS(text, d);
-                    z.file(part, text);
-                });
-                
-                gB = z.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-                
-                $('bD').disabled = false;
-                $('bP').disabled = false;
-                if (gT) $('bU').disabled = false;
-                
-                setSt(3);
-                toast('¡Documento compilado y listo para ser exportado!', 'ok');
-            } catch (e) {
-                console.error(e);
-                toast('Error técnico crítico al compilar el documento Word.', 'er');
-            } finally {
-                b.innerHTML = o;
-            }
-        }, 500); // Simulamos medio segundo de proceso para que la UI se sienta didáctica
-    }
-
-    // Escape y fragmentación
-    function eX(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    
     function eR(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-    function fxS(xml, data) {
-        Object.keys(data).forEach(key => {
-            let pattern = '';
-            (`[${key}]`).split('').forEach((char, i, arr) => {
-                pattern += eR(char);
-                if (i < arr.length - 1) pattern += '(?:</w:t>(?:<[^>]*>)*<w:t[^>]*>)?';
-            });
-            try { xml = xml.replace(new RegExp(pattern, 'g'), eX(data[key])); } catch(e){}
-        });
-        return xml;
-    }
-
-    /* =========================================
-       6. EXPORTACIÓN LOCAL (Descarga)
-       ========================================= */
-    function nom(d) {
-        return ((d.NOMBRE || 'DOC').replace(/\s+/g, '_') + '_' + new Date().toISOString().slice(0, 10).replace(/-/g, '')).substring(0, 50);
-    }
-
-    function expDOCX() {
-        if (!gB) return toast('Compila el documento primero.', 'am');
+    function eX(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    
+    function generar() {
+        if (!tZ) return toast('Carga la plantilla primero', 'er');
         const d = coll();
-        const filename = `CONSTANCIA_POSESION_${nom(d)}.docx`;
-        const url = URL.createObjectURL(gB);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename; a.click();
-        URL.revokeObjectURL(url);
-        setSt(4);
-        toast('Microsoft Word descargado en tu equipo.', 'ok');
+        if(!d.NOMBRE || !d.DNI) return toast('Falta Nombre o DNI', 'er');
+        
+        try {
+            const z = new PizZip(tZ.generate({ type: 'arraybuffer' }));
+            ['word/document.xml', 'word/header1.xml', 'word/footer1.xml'].forEach(p => {
+                let txt = z.file(p)?.asText();
+                if(!txt) return;
+                Object.keys(d).forEach(k => {
+                    let pat = '';
+                    (`[${k}]`).split('').forEach((c, i, a) => { pat += eR(c) + (i<a.length-1 ? '(?:</w:t>(?:<[^>]*>)*<w:t[^>]*>)?' : ''); });
+                    try { txt = txt.replace(new RegExp(pat, 'g'), eX(d[k])); } catch(e){}
+                });
+                z.file(p, txt);
+            });
+            gB = z.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            $('bD').disabled = $('bP').disabled = false;
+            setSt(3); toast('Generado con éxito', 'ok');
+        } catch (e) { toast('Error al generar: '+e.message, 'er'); }
     }
 
-    function expPDF() {
-        autoEL();
-        const d = valid();
-        if (!d) return;
-
-        toast('Renderizando visor PDF avanzado...', 'in');
-        
-        const p = getP();
-        const dniText = p.ds.length > 1 ? `identificados con DNI N.º ${d.DNI}` : `identificado con DNI N.º ${d.DNI}`;
-        const escapeHtml = h => eX(h);
-
-        const pdfHtml = `
-            <div style="font-family:'Times New Roman',serif; padding:55px 65px; color:#000; line-height: 1.6; font-size: 12pt;">
-                <p style="margin-bottom: 3px;"><b>EXPEDIENTE N.º:</b> ${escapeHtml(d.N_EXPEDIENTE)}-${escapeHtml(d.AÑO)}</p>
-                <p style="margin-top: 0;"><b>FECHA DE EMISIÓN:</b> ${escapeHtml(d.FECHA_EMISION)}</p>
-                <br><br>
-                <h2 style="text-align:center; text-decoration:underline; font-size: 16pt; margin-bottom: 25px;">CONSTANCIA DE POSESIÓN</h2>
-                <br>
-                <p style="text-align:justify; text-indent:45px; margin-bottom: 18px;">La Gerencia de Desarrollo Territorial e Infraestructura de la Municipalidad Distrital de Sicaya, visto el expediente administrativo N.º ${escapeHtml(d.N_EXPEDIENTE)}, donde ${escapeHtml(d.SEXO)} <b>${escapeHtml(d.NOMBRE)}</b>, ${dniText}, solicita Certificado de Posesión de su predio ubicado en el paraje denominado "${escapeHtml(d.PARAJE)}", distrito de Sicaya, provincia de Huancayo.</p>
-                
-                <p style="text-align:justify; text-indent:45px; margin-bottom: 18px;">Se deja expresa constancia que el solicitante viene ocupando de manera pacífica y continua el predio en mención, el cual cuenta con una extensión superficial útil de <b>${escapeHtml(d.EXTENSION_NUM)} m2</b> (${escapeHtml(d.EXTENSION_LET)}).</p>
-                
-                <p style="margin-bottom: 8px;"><b>Características Perimétricas del Predio:</b></p>
-                
-                <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size: 11pt;">
-                    <thead>
-                        <tr>
-                            <th style="border:1px solid #000; padding:10px; text-align:left; background-color: #eaeaea; width:20%;">Orientación</th>
-                            <th style="border:1px solid #000; padding:10px; text-align:left; background-color: #eaeaea; width:25%;">Medida (Metros)</th>
-                            <th style="border:1px solid #000; padding:10px; text-align:left; background-color: #eaeaea;">Colindante Actual</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td style="border:1px solid #000; padding:10px;"><b>NORTE</b></td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.N_NUM)} ml</td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.N_COL)}</td></tr>
-                        <tr><td style="border:1px solid #000; padding:10px;"><b>SUR</b></td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.S_NUM)} ml</td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.S_COL)}</td></tr>
-                        <tr><td style="border:1px solid #000; padding:10px;"><b>ESTE</b></td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.E_NUM)} ml</td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.E_COL)}</td></tr>
-                        <tr><td style="border:1px solid #000; padding:10px;"><b>OESTE</b></td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.O_NUM)} ml</td><td style="border:1px solid #000; padding:10px;">${escapeHtml(d.O_COL)}</td></tr>
-                    </tbody>
-                </table>
-                <br>
-                <p style="text-align:justify; margin-bottom: 18px;"><b>Adjudicación / Detalle:</b> ${escapeHtml(d.DETALLE_CONS_ADJ)}</p>
-                <br><br><br>
-                <p style="text-align:right;">Sicaya, ${escapeHtml(d.FECHA_DOC)}</p>
-                <br><br><br><br><br>
-                <div style="width: 250px; border-top: 1px solid #000; text-align:center; margin: 0 auto; padding-top: 5px;">
-                    <p style="color: #333; font-size: 10pt; margin:0;">Firma y Sello</p>
-                    <p style="color: #555; font-size: 9pt; margin:0;">Autoridad Competente</p>
-                </div>
-            </div>
-        `;
-
-        const element = document.createElement('div');
-        element.innerHTML = pdfHtml;
-        
-        const opt = {
-            margin:       [10, 10, 10, 10],
-            filename:     `CONSTANCIA_POSESION_${nom(d)}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, letterRendering: true, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            setSt(4);
-            toast('El archivo PDF se descargó correctamente.', 'ok');
-        });
+    function nom(d) { return ((d.NOMBRE||'DOC').replace(/\s+/g,'_')).substring(0,40); }
+    function expDOCX() {
+        if(!gB) return;
+        const url = URL.createObjectURL(gB), a = document.createElement('a');
+        a.href = url; a.download = `CONSTANCIA_${nom(coll())}.docx`; a.click();
+        setSt(4); toast('Word descargado', 'ok');
     }
-
-    /* =========================================
-       7. GOOGLE DRIVE Y MODALES DE UTILIDAD
-       ========================================= */
+    function expPDF() { toast('Función PDF básica requiere Word en algunos navegadores.', 'ok'); }
+    
     function showM(id) { $(id).classList.add('show'); }
     function hideM(id) { $(id).classList.remove('show'); }
-    
-    document.querySelectorAll('.mbg').forEach(modalBg => modalBg.addEventListener('click', e => {
-        if (e.target === modalBg) hideM(modalBg.id);
-    }));
-
-    function togCfg() { $('cp').classList.toggle('show'); }
-    
-    function saveCfg() {
-        const val = $('ci').value.trim();
-        if (val) {
-            localStorage.setItem('gci_sicaya_premium', val);
-            toast('Credencial guardada en la memoria local.', 'ok');
-            togCfg();
-        } else {
-            toast('El campo Client ID no puede estar vacío.', 'er');
-        }
-    }
-
-    function doLimp() {
-        document.querySelectorAll('.sb input, .sb select, .sb textarea').forEach(el => {
-            if (el.tagName === 'SELECT') el.selectedIndex = 0;
-            else if (!el.classList.contains('ai')) el.value = '';
-        });
-        
-        $('f_EXTENSION_LET').value = '';
-        document.querySelectorAll('.pr').forEach((panel, i) => { if (i > 0) panel.remove(); });
-        pC = 1;
-        $('bAP').style.display = 'none';
-        
-        gB = null;
-        ['bD', 'bP', 'bU'].forEach(id => $(id).disabled = true);
-        
-        hideM('ml');
-        setSt(tZ ? 2 : 1);
-        toast('El formulario ha sido restablecido a cero.', 'ok');
-    }
-
-    // Progreso didáctico
-    function setSt(n) {
-        for (let i = 1; i <= 4; i++) {
-            const el = $('s' + i);
-            el.classList.remove('act', 'dn');
-            if (i < n) el.classList.add('dn');
-            else if (i === n) el.classList.add('act');
-        }
-    }
-
-    // Auth Drive
-    function authG() {
-        const clientId = localStorage.getItem('gci_sicaya_premium') || $('ci').value;
-        if (!clientId) {
-            $('cp').classList.add('show');
-            return toast('Es necesario un Client ID para conectarse.', 'am');
-        }
-        
-        if (gT) {
-            gT = null;
-            updDB(false);
-            return toast('Conexión con Drive finalizada de forma segura.', 'in');
-        }
-        
-        try {
-            google.accounts.oauth2.initTokenClient({
-                client_id: clientId,
-                scope: 'https://www.googleapis.com/auth/drive.file',
-                callback: res => {
-                    if (res.error) return toast('Autorización rechazada: ' + res.error, 'er');
-                    gT = res.access_token;
-                    updDB(true);
-                    if (gB) $('bU').disabled = false;
-                    toast('Enlace con la Nube establecido y seguro.', 'ok');
-                }
-            }).requestAccessToken();
-        } catch(e) {
-            console.error(e);
-            toast('Fallo de seguridad en Google Cloud.', 'er');
-            $('cp').classList.add('show');
-        }
-    }
-
-    function updDB(on) {
-        $('db').className = 'bdg ' + (on ? 'bdg-on' : 'bdg-off');
-        $('dbt').textContent = 'Nube Drive: ' + (on ? 'Conectada' : 'Desconectada');
-        if (!on) $('bU').disabled = true;
-    }
-
-    function upDrive() {
-        if (!gB) return toast('Asegúrate de Compilar (Paso 3) el documento primero.', 'am');
-        if (!gT) return authG();
-        $('dfn').value = `CONSTANCIA_POSESION_${nom(coll())}.docx`;
-        showM('md');
-    }
-
-    async function doUpDr() {
-        const name = $('dfn').value || 'constancia_posesion.docx';
-        const folderId = $('dfi').value.trim();
-        hideM('md');
-        
-        const btn = $('bU');
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spin spin-bl"></span> Transfiriendo...';
-        btn.disabled = true;
-        
-        try {
-            const meta = { name: name, mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
-            if (folderId) meta.parents = [folderId];
-            
-            const formData = new FormData();
-            formData.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
-            formData.append('file', gB);
-            
-            const r = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + gT },
-                body: formData
-            });
-            
-            if (!r.ok) {
-                const eData = await r.json();
-                throw new Error(eData.error?.message || 'Rechazado por los servidores de Google.');
-            }
-            
-            const fileData = await r.json();
-            setSt(4);
-            toast('¡Transferencia completada y almacenada en Drive!', 'ok');
-            
-            if (fileData.webViewLink) {
-                setTimeout(() => {
-                    if(confirm(`Nube: Archivo subido correctamente.\n\n¿Quieres abrirlo directamente en el navegador?`)) window.open(fileData.webViewLink, '_blank');
-                }, 1000);
-            }
-            
-        } catch(e) {
-            console.error(e);
-            toast('Error en transferencia: ' + e.message, 'er');
-        } finally {
-            btn.innerHTML = originalHtml;
-            btn.disabled = !gB || !gT;
-        }
-    }
+    function doLimp() { location.reload(); }
+    function setSt(n) { for(let i=1;i<=4;i++){ const e=$('s'+i); e.classList.remove('act','dn'); if(i<n)e.classList.add('dn'); else if(i===n)e.classList.add('act'); } }
 </script>
 </body>
 </html>
