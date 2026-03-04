@@ -105,7 +105,7 @@
         .lt td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ffffff; }
         .lt td:first-child { color: #ffffff; font-weight: 700; font-size: 0.95rem; }
         .lt input { color: #ffffff !important; font-weight: 500; }
-        .lt input::placeholder { color: rgba(255, 255, 255, 0.5) !important; } /* Guía semi-transparente blanca */
+        .lt input::placeholder { color: rgba(255, 255, 255, 0.5) !important; }
 
         .mbg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .mbg.show { display: flex; }
@@ -145,12 +145,12 @@
 
     <div class="tpl-bar spotlight-card" id="tplBar">
         <div style="flex: 1;">
-            <div style="font-size: 1.1rem; color: #fff; font-weight: bold; margin-bottom: 5px;" id="tplTx">Esperando Archivo Maestro...</div>
-            <div style="font-size: 0.9rem; color: var(--t3);">Por favor, haz clic en el botón azul para subir tu archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> desde tu computadora.</div>
+            <div style="font-size: 1.1rem; color: #fff; font-weight: bold; margin-bottom: 5px;" id="tplTx">Conectando con el servidor...</div>
+            <div style="font-size: 0.9rem; color: var(--t3);" id="tplSubTx">Buscando archivo automático.</div>
         </div>
-        <div>
+        <div id="btnLocalDocx" style="display:none;">
             <label class="btn btn-bl" style="cursor: pointer; padding: 1rem 1.5rem;">
-                <span style="font-size: 1.3rem;">📂</span> Seleccionar Archivo (.docx)
+                <span style="font-size: 1.3rem;">📂</span> Subir Archivo Manual
                 <input type="file" accept=".docx" style="display:none" onchange="loadLocalTemplate(event)">
             </label>
         </div>
@@ -237,8 +237,52 @@
         } else $('le').style.display = 'block';
     }
     function doLogout() { sessionStorage.removeItem('auth'); location.reload(); }
-    function showApp() { $('lov').classList.add('hid'); ['ah', 'am'].forEach(id => $(id).style.display = 'block'); }
+    
+    function showApp() { 
+        $('lov').classList.add('hid'); 
+        ['ah', 'am'].forEach(id => $(id).style.display = 'block'); 
+        cargarPlantillaAutomatica(); // Llama a la carga automática
+    }
+    
     window.addEventListener('DOMContentLoaded', () => { if(sessionStorage.getItem('auth') === '1') showApp(); });
+
+    /* ====== CARGA AUTOMÁTICA DESDE GITHUB ====== */
+    const TEMPLATE_URL = './CONSTANCIA_POSESION_PLANTILLA.docx';
+
+    async function cargarPlantillaAutomatica() {
+        const tx = $('tplTx'), sub = $('tplSubTx'), bar = $('tplBar'), btn = $('btnLocalDocx');
+        setSt(1);
+        
+        try {
+            const res = await fetch(TEMPLATE_URL);
+            if (!res.ok) throw new Error("Archivo no encontrado en el servidor.");
+            
+            const buf = await res.arrayBuffer();
+            if (buf.byteLength < 500) throw new Error("Archivo corrupto.");
+            
+            if (typeof PizZip === 'undefined') throw new Error("Falla de internet, la librería PizZip no cargó.");
+            tZ = new PizZip(buf);
+            
+            // Éxito automático
+            tx.innerHTML = `✅ Plantilla automática conectada`;
+            sub.innerHTML = `El sistema encontró el archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> exitosamente.`;
+            tx.style.color = '#34d399';
+            bar.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+            btn.style.display = 'none';
+            $('bG').disabled = false;
+            setSt(2);
+            toast('Plantilla enlazada automáticamente', 'ok');
+
+        } catch (error) {
+            console.error("Fallo auto-carga:", error);
+            // Fallo, mostrar botón manual
+            tx.innerHTML = `⚠️ Esperando Archivo...`;
+            tx.style.color = '#fca5a5';
+            sub.innerHTML = `Sube el archivo <b>CONSTANCIA_POSESION_PLANTILLA.docx</b> haciendo clic en el botón azul.`;
+            btn.style.display = 'block';
+            toast('Sube el archivo manualmente para continuar.', 'er');
+        }
+    }
 
     /* ====== FUNCIÓN DE CARGA MANUAL ====== */
     function loadLocalTemplate(e) {
@@ -251,9 +295,11 @@
                 if (typeof PizZip === 'undefined') throw new Error("La herramienta interna no cargó. Revisa tu internet.");
                 tZ = new PizZip(evt.target.result);
                 
-                $('tplTx').innerHTML = `✅ Plantilla maestra cargada: <b>${file.name}</b>`;
+                $('tplTx').innerHTML = `✅ Plantilla manual cargada`;
+                $('tplSubTx').innerHTML = `Archivo vinculado: <b>${file.name}</b>`;
                 $('tplTx').style.color = '#34d399';
                 $('tplBar').style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                $('btnLocalDocx').style.display = 'none';
                 $('bG').disabled = false;
                 setSt(2);
                 toast('¡Plantilla procesada correctamente!', 'ok');
@@ -276,7 +322,7 @@
     }
     function addP() {
         const d = document.createElement('div'); d.className = 'pr spotlight-card';
-        d.innerHTML = `<div class="lf"><label>Nombre</label><input type="text" class="pn"></div><div class="lf"><label>DNI</label><input type="text" class="pd"></div><button class="btn btn-rd" onclick="this.closest('.pr').remove()">X</button>`;
+        d.innerHTML = `<div class="lf"><label>Nombre</label><input type="text" class="pn"></div><div class="lf"><label>DNI</label><input type="text" class="pd" maxlength="8"></div><button class="btn btn-rd" onclick="this.closest('.pr').remove()">X</button>`;
         $('pl').appendChild(d);
         d.addEventListener('mousemove', e => {
             const rect = d.getBoundingClientRect();
@@ -316,10 +362,19 @@
     function eR(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     function eX(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     
+    function valid() {
+        const d = coll();
+        const ms = ['N_EXPEDIENTE', 'AÑO', 'FECHA_EMISION', 'NOMBRE', 'PARAJE', 'LT', 'EXTENSION_NUM'].filter(k => !d[k]?.trim());
+        const p = getP();
+        if (!p.ds.length || p.ds.some(x => !x)) ms.push('DNI');
+        if (ms.length) { toast('Completa los campos: ' + ms.join(', '), 'er'); return null; }
+        return d;
+    }
+
     function generar() {
         if (!tZ) return toast('Carga la plantilla primero', 'er');
-        const d = coll();
-        if(!d.NOMBRE || !d.DNI) return toast('Completa los campos de Nombre y DNI', 'er');
+        const d = valid();
+        if(!d) return;
         
         try {
             const z = new PizZip(tZ.generate({ type: 'arraybuffer' }));
@@ -335,7 +390,7 @@
             });
             gB = z.generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
             
-            // Habilitar únicamente botón de Word
+            // Habilitar botón Word
             $('bD').disabled = false;
             setSt(3); toast('Documento generado con éxito', 'ok');
         } catch (e) { toast('Error al generar: '+e.message, 'er'); }
